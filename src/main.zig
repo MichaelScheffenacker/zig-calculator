@@ -1,11 +1,13 @@
 const std = @import("std");
 const print = std.debug.print;
 
-const Frac = struct { num: i64, den: i64 };
+const Frac = struct { num: u64, den: u64 };
 
 var primes: [1024]u64 = undefined;
 
-var primeFactorizations: [128][128]i64 = undefined;
+var primeFactorizations: [128][128]u64 = undefined;
+
+const PrimeFacErr = error { miss };
 
 pub fn main() !void {
     generatePrimes();
@@ -27,28 +29,10 @@ pub fn main() !void {
 
     print("\n", .{});
 
-    //     // Prints to stderr (it's a shortcut based on `std.io.getStdErr()`)
-    // std.debug.print("All your {s} are belong to us.\n", .{"codebase"});
-
-    // // stdout is for the actual output of your application, for example if you
-    // // are implementing gzip, then only the compressed bytes should be sent to
-    // // stdout, not any debugging messages.
-    // const stdout_file = std.io.getStdOut().writer();
-    // var bw = std.io.bufferedWriter(stdout_file);
-    // const stdout = bw.writer();
-
-    // try stdout.print("Run `zig build test` to run the tests.\n", .{});
-
-    // try bw.flush(); // don't forget to flush!
-
-    const primeFacs = primeFactorize(8);
-    print("{any} {}\n", .{primeFacs, primeFacs.len });
-
-    for (primeFacs) |p| {
-        print( "{} ", .{p});
-    }
-
-    print("\n", .{});
+    const number1 = 156;
+    _ = try primeFactorize(number1);
+    const number2 = 133;
+    _ = try primeFactorize(number2);
 
     
 }
@@ -60,6 +44,13 @@ fn add(a: Frac, b: Frac) Frac {
 
 fn printFrac(a: Frac) void {
     std.debug.print("{}/{}", .{a.num, a.den});
+}
+
+fn printFac(number: u64, factors: []u64) void {
+    print("{} = ", .{number});
+    for (factors) |p| { print( "{}·", .{p}); }
+    print("\n", .{});
+
 }
 
 fn generatePrimes() void {
@@ -76,19 +67,34 @@ fn generatePrimes() void {
             p += 1;
         }
     }
-    i = 0;
-    while (i < primes.len and i < 100) : (i += 1) {
-        std.debug.print("{}, ", .{primes[i]});
-    }
+    
+    for (primes[0..8]) |prime| { print("{} ", .{prime}); }
+    print("... ", .{});
+    for (primes[1018..]) |prime| { print("{} ", .{prime}); }
 }
 
-fn primeFactorize(number: i64) []i64 {
-    var facs = primeFactorizations[0][0..];
-    facs[0] = number;
-    facs[1] = 3;
-    facs[2] = 4;
-    return facs[0..3];
+fn primeFactorize(number: u64) ![]u64 {
+    var facs:[]u64 = primeFactorizations[0][0..];
+    var n:u64 = number;
+    for (facs, 0..) |*fac, i| {
+        for (primes) |prime| {
+            if (n % prime == 0) {
+                n = n / prime;
+                fac.* = prime;
+                break;
+            }
+            if (n == 1) {
+                facs = facs[0..i];
+                printFac(number, facs);
+                return facs;
+            }
+            if (prime > n) { return PrimeFacErr.miss; }
+            
+        }
+    }
+    return PrimeFacErr.miss;
 }
+
 
 // test "simple test" {
 //     var list = std.ArrayList(i32).init(std.testing.allocator);
