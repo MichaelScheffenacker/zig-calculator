@@ -5,7 +5,7 @@ const Frac = struct { num: i64, den: i64 };
 
 var primes: [1024]u64 = undefined;
 
-var primeFactorizations: [128][128]u64 = undefined;
+var primeFactorizations: [128][128]i64 = undefined;
 
 pub fn main() !void {
     generatePrimes();
@@ -41,7 +41,14 @@ pub fn main() !void {
 
     // try bw.flush(); // don't forget to flush!
 
-    print("{any}\n", .{primeFactorize(8)});
+    const primeFacs = primeFactorize(8);
+    print("{any} {}\n", .{primeFacs, primeFacs.len });
+
+    for (primeFacs) |p| {
+        print( "{} ", .{p});
+    }
+
+    print("\n", .{});
 
     
 }
@@ -75,13 +82,12 @@ fn generatePrimes() void {
     }
 }
 
-fn primeFactorize(number: i64) []u64 {
-    var facs = primeFactorizations[0][0..3];
-    _ = number;
-    facs[0] = 2;
+fn primeFactorize(number: i64) []i64 {
+    var facs = primeFactorizations[0][0..];
+    facs[0] = number;
     facs[1] = 3;
     facs[2] = 4;
-    return facs;
+    return facs[0..3];
 }
 
 // test "simple test" {
