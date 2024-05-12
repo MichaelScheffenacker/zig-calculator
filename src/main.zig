@@ -1,5 +1,6 @@
 const std = @import("std");
 const print = std.debug.print;
+const stdin = std.io.getStdIn().reader();
 
 const Frac = struct { num:u64, den:u64 };
 
@@ -12,6 +13,8 @@ var primeFactorizations: [128][128]u64 = undefined;
 const PrimeFacErr = error { miss };
 
 const Lcm = struct { fac1:u64, fac2:u64 };
+
+var inputBuffer: [128]u8 = undefined;
 
 pub fn main() !void {
     generatePrimes();
@@ -44,7 +47,61 @@ pub fn main() !void {
 
     print("\n", .{});
 
+
+    // if (try stdin.readUntilDelimiterOrEof(inputBuffer[0..], '\n')) |user_input| {
+    //     print("input: {}", .{std.fmt.parseInt(i64, user_input, 10)});
+    // }
+
+    const inputResult = stdin.readUntilDelimiterOrEof(inputBuffer[0..], '\n') catch null;
+    if (inputResult) |input| {
+        var num1:i64 = 0;
+        var sig1:i2 = 1;
+        var start1:bool = true;
+        //var num2:i64 = 0;
+        //var neg2:i2 = 1;
+        //var start2:bool = true;
+        var step:u64 = 0;
+        for (input) |symbol| {
+            if (step == 0 and  isNumberSymbol(symbol)) {
+                step = 1;
+            }
+            if (step == 1) {
+                if (start1) {
+                    start1 = false;
+                    if (symbol == '-') {
+                        sig1 = -1;
+                        continue;
+                    }                  
+                }
+                if (isDigitSymbol(symbol)) {
+                    const digit = symbol - '0';
+                    num1 = num1*10 + digit;
+                } else {
+                    step += 1;
+                }
+            } else if (step == 2) {
+                if (symbol == '/') {
+                    step += 1;
+                }
+            } else if (step == 3) {
+                
+            }
+                
+        }
+        num1 *= sig1;
+        print("num1: {}   sig1: {}\n", .{num1, sig1});
+
+        
+    }
     
+}
+
+fn isDigitSymbol(symbol: u8) bool {
+    return (symbol >= '0' and symbol <= '9');
+}
+
+fn isNumberSymbol(symbol: u8) bool {
+    return (symbol == '-' or isDigitSymbol(symbol));
 }
 
 fn add(a:Frac, b:Frac) Frac {
@@ -89,10 +146,10 @@ fn generatePrimes() void {
         }
     }
     
-    for (primes[0..8]) |prime| { print("{} ", .{prime}); }
-    print("... ", .{});
-    for (primes[1018..]) |prime| { print("{} ", .{prime}); }
-    print("\n", .{});
+    // for (primes[0..8]) |prime| { print("{} ", .{prime}); }
+    // print("... ", .{});
+    // for (primes[1018..]) |prime| { print("{} ", .{prime}); }
+    // print("\n", .{});
 }
 
 fn primeFactorize(number: u64) ![]u64 {
@@ -108,7 +165,7 @@ fn primeFactorize(number: u64) ![]u64 {
             }
             if (n == 1) {
                 facs = facs[0..i];
-                printFac(number, facs);
+                // printFac(number, facs);
                 return facs;
             }
             if (prime > n) { return PrimeFacErr.miss; }
@@ -126,7 +183,7 @@ fn calcLcm(factors1:[]u64, factors2:[]u64) Lcm {
         const val1:u64 = if (index1 < factors1.len) factors1[index1] else maxInt;
         const val2:u64 = if (index2 < factors2.len) factors2[index2] else maxInt;
 
-        print("{} {}\n", .{lcm.fac1, lcm.fac2});
+        // print("{} {}\n", .{lcm.fac1, lcm.fac2});
         
         if (val1 == maxInt and val2 == maxInt) {  return lcm; }
                 
@@ -152,7 +209,7 @@ fn calcGcd(factors1:[]u64, factors2:[]u64) u64 {
         const val1:u64 = if (index1 < factors1.len) factors1[index1] else maxInt;
         const val2:u64 = if (index2 < factors2.len) factors2[index2] else maxInt;
 
-        print("{} {} {} {} {} \n", .{index1, index2, val1, val2, gcd});
+        // print("{} {} {} {} {} \n", .{index1, index2, val1, val2, gcd});
 
         if (val1 == maxInt and val2 == maxInt) {  return gcd; }
 
