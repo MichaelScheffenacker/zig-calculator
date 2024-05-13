@@ -49,7 +49,7 @@ pub fn main() !void {
 
 
     //const inputResult = stdin.readUntilDelimiterOrEof(inputBuffer[0..], '\n') catch null;
-    const input = "asdf -12/ -8 asdf";
+    const input = "asdf -12/ -88";
     //if (inputResult) |input| {
         parse(input);
     //}
@@ -64,12 +64,16 @@ fn parse(input: []const u8) void {
     var sig2:i2 = 1;
     var start2:bool = true;
     var step:u64 = 0;
-    for (input) |symbol| {
+    var i:u64 = 0;
+    var symbol:u8 = undefined;
+    while (i < input.len) {
+        symbol = input[i];
+        i = i+1;
         if (step == 0 and  isNumberSymbol(symbol)) {
             step += 1;
         }
         if (step == 1) {
-            parseNumber(symbol, &num1, &sig1, &start1, &step);
+            parseNumberSymbol(symbol, &num1, &sig1, &start1, &step);
         }
         if (step == 2) {
             if (symbol == '/') {
@@ -80,7 +84,7 @@ fn parse(input: []const u8) void {
             step += 1;
         }
         if (step == 4) {
-            parseNumber(symbol, &num2, &sig2, &start2, &step);
+            parseNumberSymbol(symbol, &num2, &sig2, &start2, &step);
         }
 
     }
@@ -90,7 +94,7 @@ fn parse(input: []const u8) void {
     print("num1: {}   num2: {}\n", .{num1, num2 });
 }
 
-fn parseNumber(symbol: u8, num: *i64, sig: *i2, start: *bool, step: * u64) void {
+fn parseNumberSymbol(symbol: u8, num: *i64, sig: *i2, start: *bool, step: * u64) void {
     if (start.*) {
         start.* = false;
         if (symbol == '-') {
