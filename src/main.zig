@@ -48,9 +48,16 @@ pub fn main() !void {
     print("\n", .{});
 
 
-    const inputResult = stdin.readUntilDelimiterOrEof(inputBuffer[0..], '\n') catch null;
-    if (inputResult) |input| {
-        var num1:i64 = 0;
+    //const inputResult = stdin.readUntilDelimiterOrEof(inputBuffer[0..], '\n') catch null;
+    const input = "asdf -12/ -8 asdf";
+    //if (inputResult) |input| {
+        parse(input);
+    //}
+    
+}
+
+fn parse(input: []const u8) void {
+    var num1:i64 = 0;
         var sig1:i2 = 1;
         var start1:bool = true;
         var num2:i64 = 0;
@@ -105,14 +112,8 @@ pub fn main() !void {
         num2 *= sig2;
         num2 = if (num2 == 0) 1 else num2;
         print("num1: {}   num2: {}\n", .{num1, num2 });
-        
-    }
-    
-}
 
-//fn parse(input: []const u8) {
-    
-//}
+}
 
 fn isDigitSymbol(symbol: u8) bool {
     return (symbol >= '0' and symbol <= '9');
