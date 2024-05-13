@@ -48,22 +48,18 @@ pub fn main() !void {
     print("\n", .{});
 
 
-    // if (try stdin.readUntilDelimiterOrEof(inputBuffer[0..], '\n')) |user_input| {
-    //     print("input: {}", .{std.fmt.parseInt(i64, user_input, 10)});
-    // }
-
     const inputResult = stdin.readUntilDelimiterOrEof(inputBuffer[0..], '\n') catch null;
     if (inputResult) |input| {
         var num1:i64 = 0;
         var sig1:i2 = 1;
         var start1:bool = true;
-        //var num2:i64 = 0;
-        //var neg2:i2 = 1;
-        //var start2:bool = true;
+        var num2:i64 = 0;
+        var sig2:i2 = 1;
+        var start2:bool = true;
         var step:u64 = 0;
         for (input) |symbol| {
             if (step == 0 and  isNumberSymbol(symbol)) {
-                step = 1;
+                step += 1;
             }
             if (step == 1) {
                 if (start1) {
@@ -79,22 +75,44 @@ pub fn main() !void {
                 } else {
                     step += 1;
                 }
-            } else if (step == 2) {
+            }
+            if (step == 2) {
                 if (symbol == '/') {
                     step += 1;
                 }
-            } else if (step == 3) {
-                
+            }
+            if (step == 3 and isNumberSymbol(symbol)) {
+                step += 1;
+            }
+            if (step == 4) {
+                if (start2) {
+                    start2 = false;
+                    if (symbol == '-') {
+                        sig2 = -1;
+                        continue;
+                    }
+                }
+                if (isDigitSymbol(symbol)) {
+                    const digit = symbol - '0';
+                    num2 = num2*10 + digit;
+                } else {
+                    step +=1;
+                }
             }
                 
         }
         num1 *= sig1;
-        print("num1: {}   sig1: {}\n", .{num1, sig1});
-
+        num2 *= sig2;
+        num2 = if (num2 == 0) 1 else num2;
+        print("num1: {}   num2: {}\n", .{num1, num2 });
         
     }
     
 }
+
+//fn parse(input: []const u8) {
+    
+//}
 
 fn isDigitSymbol(symbol: u8) bool {
     return (symbol >= '0' and symbol <= '9');
@@ -225,9 +243,6 @@ fn calcGcd(factors1:[]u64, factors2:[]u64) u64 {
     }
 }
 
-// test "simple test" {
-//     var list = std.ArrayList(i32).init(std.testing.allocator);
-//     defer list.deinit(); // try commenting this out and see if zig detects the memory leak!
-//     try list.append(42);
-//     try std.testing.expectEqual(@as(i32, 42), list.pop());
-// }
+test "simple test" {
+    //try std.testing.expectEqual(@as(i32, 42), list.pop());
+}
