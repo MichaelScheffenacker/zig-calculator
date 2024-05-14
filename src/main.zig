@@ -3,6 +3,14 @@ const print = std.debug.print;
 const stdin = std.io.getStdIn().reader();
 
 const Frac = struct { num:u64, den:u64 };
+const ExpressionSymbolTag = enum { int, frac, op };
+const ExpressionSymbol = union(ExpressionSymbolTag) {
+    int: i64,
+    frac: Frac,
+    op: u8,
+};
+var expressionSymbolsBuffer: [1024]ExpressionSymbol = undefined;
+var expressionSymbols: []ExpressionSymbol =  expressionSymbolsBuffer[0..0];
 
 const maxInt = std.math.maxInt(u64);
 var primes: [1024]u64 = undefined;
@@ -58,80 +66,48 @@ pub fn main() !void {
 
 fn parse(input: []const u8) void {
     var num:i64 = 0;
-    //var sig1:i2 = 1;
-    //var start1:bool = true;
     var den:i64 = 0;
-    //var sig2:i2 = 1;
-    //var start2:bool = true;
-    var step:u64 = 0;
     var i:u64 = 0;
     var symbol:u8 = undefined;
-    step += 1;
     while (i < input.len) {
         symbol = input[i];
-        
-        
-        if (step == 1 and isNumberSymbol(symbol)) {
-            
-            num = parseNumber(input, &i, &step);
-            symbol = input[i];
+
+        if (isNumberSymbol(symbol)) {
+            const pos = expressionSymbols.len;
+            expressionSymbols.len += 1;
+            expressionSymbols[pos].int = parseNumber(input, &i, &symbol);
         }
-        if (step == 2) {
-            if (symbol == '/') {
-                step += 1;
-                step += 1;
-            }
-        }
-        print("{} {} {c}\n", .{i, step, symbol});
-        if (step == 4 and isNumberSymbol(symbol)) {
-            den = parseNumber(input, &i, &step);
-        }
-        
+
+        //print("{} {c}\n", .{i, symbol});
         i += 1;
     }
+    num = expressionSymbols[0].int;
+    den = expressionSymbols[1].int;
     print("num: {}   den: {}\n", .{num, den});
 }
 
-fn parseNumber(input: []const u8, i: *u64, step: *u64) i64 {
+fn parseNumber(input:[]const u8, i:*u64, symbol:*u8 ) i64 {
     var num:i64 = 0;
     var sig:i2 = 1;
     var start: bool = true;
-    var symbol:u8 = undefined;
     while (i.* < input.len) {
-        symbol = input[i.*];
+        symbol.* = input[i.*];
 
         if (start) {
             start = false;
-            if (symbol == '-') {
+            if (symbol.* == '-') {
                 sig = -1;
             }
-        } else if (isDigitSymbol(symbol)) {
-            const digit = symbol - '0';
+        } else if (isDigitSymbol(symbol.*)) {
+            const digit = symbol.* - '0';
             num = num * 10 + digit;
         } else {
-            step.* += 1;
             return num * sig;
         }
         
         i.* += 1;
     }
     return num * sig;
-}
-
-fn parseNumberSymbol(symbol: u8, num: *i64, sig: *i2, start: *bool, step: *u64) void {
-    if (start.*) {
-        start.* = false;
-        if (symbol == '-') {
-            sig.* = -1;
-            return;
-        }
-    }
-    if (isDigitSymbol(symbol)) {
-        const digit = symbol - '0';
-        num.* = num.* * 10 + digit;
-    } else {
-        step.* +=1;
-    }
 }
 
 fn isDigitSymbol(symbol: u8) bool {
