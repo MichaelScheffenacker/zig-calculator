@@ -73,9 +73,7 @@ fn parse(input: []const u8) void {
         symbol = input[i];
 
         if (isNumberSymbol(symbol)) {
-            const pos = expressionSymbols.len;
-            expressionSymbols.len += 1;
-            expressionSymbols[pos].int = parseNumber(input, &i, &symbol);
+            append(ExpressionSymbol{ .int = parseNumber(input, &i, &symbol) });
         }
 
         //print("{} {c}\n", .{i, symbol});
@@ -108,6 +106,12 @@ fn parseNumber(input:[]const u8, i:*u64, symbol:*u8 ) i64 {
         i.* += 1;
     }
     return num * sig;
+}
+
+fn append(value :ExpressionSymbol) void {
+    const pos = expressionSymbols.len;
+    expressionSymbols.len += 1;
+    expressionSymbols[pos] = value;
 }
 
 fn isDigitSymbol(symbol: u8) bool {
