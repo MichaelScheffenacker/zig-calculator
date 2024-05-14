@@ -57,44 +57,68 @@ pub fn main() !void {
 }
 
 fn parse(input: []const u8) void {
-    var num1:i64 = 0;
-    var sig1:i2 = 1;
-    var start1:bool = true;
-    var num2:i64 = 0;
-    var sig2:i2 = 1;
-    var start2:bool = true;
+    var num:i64 = 0;
+    //var sig1:i2 = 1;
+    //var start1:bool = true;
+    var den:i64 = 0;
+    //var sig2:i2 = 1;
+    //var start2:bool = true;
     var step:u64 = 0;
     var i:u64 = 0;
     var symbol:u8 = undefined;
+    step += 1;
     while (i < input.len) {
         symbol = input[i];
-        i = i+1;
-        if (step == 0 and  isNumberSymbol(symbol)) {
-            step += 1;
-        }
-        if (step == 1) {
-            parseNumberSymbol(symbol, &num1, &sig1, &start1, &step);
+        
+        
+        if (step == 1 and isNumberSymbol(symbol)) {
+            
+            num = parseNumber(input, &i, &step);
+            symbol = input[i];
         }
         if (step == 2) {
             if (symbol == '/') {
                 step += 1;
+                step += 1;
             }
         }
-        if (step == 3 and isNumberSymbol(symbol)) {
-            step += 1;
+        print("{} {} {c}\n", .{i, step, symbol});
+        if (step == 4 and isNumberSymbol(symbol)) {
+            den = parseNumber(input, &i, &step);
         }
-        if (step == 4) {
-            parseNumberSymbol(symbol, &num2, &sig2, &start2, &step);
-        }
-
+        
+        i += 1;
     }
-    num1 *= sig1;
-    num2 *= sig2;
-    num2 = if (num2 == 0) 1 else num2;
-    print("num1: {}   num2: {}\n", .{num1, num2 });
+    print("num: {}   den: {}\n", .{num, den});
 }
 
-fn parseNumberSymbol(symbol: u8, num: *i64, sig: *i2, start: *bool, step: * u64) void {
+fn parseNumber(input: []const u8, i: *u64, step: *u64) i64 {
+    var num:i64 = 0;
+    var sig:i2 = 1;
+    var start: bool = true;
+    var symbol:u8 = undefined;
+    while (i.* < input.len) {
+        symbol = input[i.*];
+
+        if (start) {
+            start = false;
+            if (symbol == '-') {
+                sig = -1;
+            }
+        } else if (isDigitSymbol(symbol)) {
+            const digit = symbol - '0';
+            num = num * 10 + digit;
+        } else {
+            step.* += 1;
+            return num * sig;
+        }
+        
+        i.* += 1;
+    }
+    return num * sig;
+}
+
+fn parseNumberSymbol(symbol: u8, num: *i64, sig: *i2, start: *bool, step: *u64) void {
     if (start.*) {
         start.* = false;
         if (symbol == '-') {
