@@ -3,10 +3,9 @@ const print = std.debug.print;
 const stdin = std.io.getStdIn().reader();
 
 const Frac = struct { num:u64, den:u64 };
-const ExpressionSymbolTag = enum { int, frac, op };
+const ExpressionSymbolTag = enum { int, op };
 const ExpressionSymbol = union(ExpressionSymbolTag) {
     int: i64,
-    frac: Frac,
     op: u8,
 };
 var expressionSymbolsBuffer: [1024]ExpressionSymbol = undefined;
@@ -62,11 +61,17 @@ pub fn main() !void {
         parse(input);
     //}
     
+    for (expressionSymbols) |symbol| {
+        switch (symbol) {
+            .int => |int| print("{} ", .{int}),
+            .op  => |op|  print("{c} ", .{op}),
+        }
+    }
+    print("\n", .{});
+    
 }
 
 fn parse(input: []const u8) void {
-    var num:i64 = 0;
-    var den:i64 = 0;
     var i:u64 = 0;
     var symbol:u8 = undefined;
     while (i < input.len) {
@@ -75,13 +80,13 @@ fn parse(input: []const u8) void {
         if (isNumberSymbol(symbol)) {
             append(ExpressionSymbol{ .int = parseNumber(input, &i, &symbol) });
         }
+        if (isOperatorSymbol(symbol)) {
+            append(ExpressionSymbol{ .op = symbol });
+        }
 
         //print("{} {c}\n", .{i, symbol});
         i += 1;
     }
-    num = expressionSymbols[0].int;
-    den = expressionSymbols[1].int;
-    print("num: {}   den: {}\n", .{num, den});
 }
 
 fn parseNumber(input:[]const u8, i:*u64, symbol:*u8 ) i64 {
@@ -120,6 +125,10 @@ fn isDigitSymbol(symbol: u8) bool {
 
 fn isNumberSymbol(symbol: u8) bool {
     return (symbol == '-' or isDigitSymbol(symbol));
+}
+
+fn isOperatorSymbol(symbol: u8) bool {
+    return (symbol == '/' or symbol == '*' or symbol == '+');
 }
 
 fn add(a:Frac, b:Frac) Frac {
