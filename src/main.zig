@@ -56,19 +56,24 @@ pub fn main() !void {
 
     
     //const inputResult = stdin.readUntilDelimiterOrEof(inputBuffer[0..], '\n') catch null;
+    //if (inputResult) |input| {
+
     const inputs: [5][]const u8 = .{
         "asdf -12/ -88",
         "asdf -12 /-88 ",
         "-12/-88asfd",
         "12 / 88",
         "",
+        //"12//88",
+        //"12/",
     };
 
     for (inputs) |input| {
         expressionSymbols = expressionSymbolsBuffer[0..0];
-        //if (inputResult) |input| {
-        parse(input);
-        //}
+
+        if (input.len > 0) {
+            try parse(input);
+        }
         
         for (expressionSymbols) |symbol| {
             switch (symbol) {
@@ -83,12 +88,24 @@ pub fn main() !void {
 
 fn parse(string: []const u8) void {
     var runIndex:u64 = 0;
+    var isOperatorPosition = false;
+    var sign: i2 = 1;
     while (runIndex < string.len) {
         if (isDigitSymbol( string[runIndex] )) {
-            append(ExpressionSymbol{ .int = parseNumber(string, &runIndex) });
+            const number = sign * parseNumber(string, &runIndex);
+            append(ExpressionSymbol{ .int = number });
+            isOperatorPosition = true;
+            sign = 1;
         }
         if (isOperatorSymbol( string[runIndex] )) {
-            append(ExpressionSymbol{ .op = string[runIndex] });
+            if (isOperatorPosition) {
+                append(ExpressionSymbol{ .op = string[runIndex] });
+                isOperatorPosition = false;
+            } else if (isSignSymbol( string[runIndex] )) {
+                if (string[runIndex] == '-') {
+                    sign = sign * -1;
+                }
+            } 
         }
 
         //print("{} {c}\n", .{i, symbol});
