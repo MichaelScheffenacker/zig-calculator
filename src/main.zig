@@ -3,13 +3,22 @@ const print = std.debug.print;
 const stdin = std.io.getStdIn().reader();
 
 const Frac = struct { num:u64, den:u64 };
-const ExpressionSymbolTag = enum { int, op };
-const ExpressionSymbol = union(ExpressionSymbolTag) {
+const SymbolTag = enum { int, op };
+const Symbol = union(SymbolTag) {
     int: i64,
     op: u8,
 };
-var expressionSymbolsBuffer: [1024]ExpressionSymbol = undefined;
-var expressionSymbols: []ExpressionSymbol = undefined;
+var symbolsBuffer: [1024]Symbol = undefined;
+var symbols: []Symbol = undefined;
+
+const ExpressionTag = enum { int, frac, op };
+const Expression = union(ExpressionTag) {
+    int: i64,
+    frac: Frac,
+    op: u8,
+};
+var expressionsBuffer: [1024]Expression = undefined;
+var expressions: []Expression = undefined;
 
 const maxInt = std.math.maxInt(u64);
 var primes: [1024]u64 = undefined;
@@ -59,9 +68,10 @@ pub fn main() !void {
     //const inputResult = stdin.readUntilDelimiterOrEof(inputBuffer[0..], '\n') catch null;
     //if (inputResult) |input| {
 
-    const inputs: [5][]const u8 = .{
+    const inputs: [6][]const u8 = .{
+        "3/4 + -3/7",
         "asdf -12/ -88",
-        "asdf -12 /-88 ",
+        "asdf-12 /-88 ",
         "-12/-88asfd",
         "12 / 88",
         "",
@@ -70,19 +80,25 @@ pub fn main() !void {
     };
 
     for (inputs) |input| {
-        expressionSymbols = expressionSymbolsBuffer[0..0];
+        symbols = symbolsBuffer[0..0];
 
         if (input.len > 0) {
             try parse(input);
         }
         
-        for (expressionSymbols) |symbol| {
+        for (symbols) |symbol| {
             switch (symbol) {
                 .int => |int| print("{} ", .{int}),
                 .op  => |op|  print("{c} ", .{op}),
             }
+
+            
+            
+            
         }
         print("\n", .{});
+
+        
     }
     
 }
@@ -94,13 +110,13 @@ fn parse(string: []const u8) !void {
     while (runIndex < string.len) {
         if (isDigitSymbol( string[runIndex] )) {
             const number = sign * parseNumber(string, &runIndex);
-            append(ExpressionSymbol{ .int = number });
+            append(Symbol{ .int = number });
             isOperatorPosition = true;
             sign = 1;
         }
         if (isOperatorSymbol( string[runIndex] )) {
             if (isOperatorPosition) {
-                append(ExpressionSymbol{ .op = string[runIndex] });
+                append(Symbol{ .op = string[runIndex] });
                 isOperatorPosition = false;
             } else if (isSignSymbol( string[runIndex] )) {
                 if (string[runIndex] == '-') {
@@ -115,9 +131,9 @@ fn parse(string: []const u8) !void {
         //print("{} {c}\n", .{i, symbol});
         runIndex += 1;
     }
-    switch (expressionSymbols[expressionSymbols.len - 1]) {
-        ExpressionSymbol.int => {},
-        ExpressionSymbol.op => { return ParseError.missingOperand; },
+    switch (symbols[symbols.len - 1]) {
+        Symbol.int => {},
+        Symbol.op => { return ParseError.missingOperand; },
     }
     
 }
@@ -136,10 +152,16 @@ fn parseNumber(string:[]const u8, runIndex:*u64) i64 {
     return num;
 }
 
-fn append(value :ExpressionSymbol) void {
-    const pos = expressionSymbols.len;
-    expressionSymbols.len += 1;
-    expressionSymbols[pos] = value;
+fn append(value :Symbol) void {
+    const pos = symbols.len;
+    symbols.len += 1;
+    symbols[pos] = value;
+}
+
+fn appendExpression(value: Expression) void {
+    const pos = expressions.len;
+    expressions.len += 1;
+    expressions[pos] = value;
 }
 
 fn isDigitSymbol(symbol: u8) bool {
