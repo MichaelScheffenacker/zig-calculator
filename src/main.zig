@@ -18,6 +18,7 @@ var currentFactorization:u64 = 0;
 var primeFactorizations: [128][128]u64 = undefined;
 
 const PrimeFacErr = error { miss };
+const ParseError = error { missingOperand, redundantOperator };
 
 const Lcm = struct { fac1:u64, fac2:u64 };
 
@@ -86,7 +87,7 @@ pub fn main() !void {
     
 }
 
-fn parse(string: []const u8) void {
+fn parse(string: []const u8) !void {
     var runIndex:u64 = 0;
     var isOperatorPosition = false;
     var sign: i2 = 1;
@@ -105,12 +106,20 @@ fn parse(string: []const u8) void {
                 if (string[runIndex] == '-') {
                     sign = sign * -1;
                 }
-            } 
+            }
+            else {
+                return ParseError.redundantOperator;
+            }            
         }
 
         //print("{} {c}\n", .{i, symbol});
         runIndex += 1;
     }
+    switch (expressionSymbols[expressionSymbols.len - 1]) {
+        ExpressionSymbol.int => {},
+        ExpressionSymbol.op => { return ParseError.missingOperand; },
+    }
+    
 }
 
 fn parseNumber(string:[]const u8, runIndex:*u64) i64 {
