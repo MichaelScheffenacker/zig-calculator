@@ -96,35 +96,33 @@ pub fn main() !void {
             try parse(input);
         }
 
-        var skip = false;
-        for (symbols, 0..) |symbol, i| {
-            symbol.printx();
+        express();
 
-            if (skip) {
-                skip = false;
-                continue;
-            }
-            
-            if (symbol.isDivisionOperator()) {
-                const frac = Frac{ .num = symbols[i-1].int, .den = symbols[i+1].int };
-                expressions[expressions.len - 1] = Expression{ .frac = frac };
-                skip = true;
-            } else {
-                appendExpression(symbol);
-            }
-                                                 
-            
-        }
-        print("\n", .{});
-        
-        for (expressions) |expression| {
-            expression.printx();
-        }
-
-        print("\n", .{});
-        
+        printExpressionSlice(symbols);
+        printExpressionSlice(expressions);
     }
-    
+}
+
+fn printExpressionSlice(slice: []Expression) void {
+    for (slice) |element| {
+        element.printx();
+    }
+    print("\n", .{});
+}
+
+fn express() void {
+    var i:u64 = 0;
+    while (i < symbols.len) {
+        const symbol = symbols[i];
+        if (symbol.isDivisionOperator()) {  // fraction after fraction will cause a bug rn
+            const frac = Frac{ .num = symbols[i-1].int, .den = symbols[i+1].int };
+            expressions[expressions.len - 1] = Expression{ .frac = frac };
+            i += 1;  // fraction takes symbols at i-1, i, i+1 and puts it instead of last expression
+        } else {
+            appendExpression(symbol);
+        }
+        i += 1;
+    }
 }
 
 fn parse(string: []const u8) !void {
@@ -152,8 +150,6 @@ fn parse(string: []const u8) !void {
                 return ParseError.redundantOperator;
             }            
         }
-
-        //print("{} {c}\n", .{i, symbol});
         runIndex += 1;
     }
     switch (symbols[symbols.len - 1]) {
