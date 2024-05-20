@@ -92,9 +92,7 @@ pub fn main() !void {
         symbols = symbolsBuffer[0..0];
         expressions = expressionsBuffer[0..0];
 
-        if (input.len > 0) {
-            try parse(input);
-        }
+        try parse(input);
 
         express();
 
@@ -152,12 +150,14 @@ fn parse(string: []const u8) !void {
         }
         runIndex += 1;
     }
-    switch (symbols[symbols.len - 1]) {
-        .int => {},
-        .frac => {},
-        .op => { return ParseError.missingOperand; },
+
+    if (symbols.len > 0) {
+        switch (symbols[symbols.len - 1]) {
+            .int => {},
+            .frac => {},
+            .op => { return ParseError.missingOperand; },
+        }
     }
-    
 }
 
 fn parseNumber(string:[]const u8, runIndex:*u64) i64 {
