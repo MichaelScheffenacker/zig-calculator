@@ -2,25 +2,34 @@ const std = @import("std");
 const print = std.debug.print;
 const stdin = std.io.getStdIn().reader();
 
-const Frac = struct { num:u64, den:u64 };
-const SymbolTag = enum { int, op };
-const Symbol = union(SymbolTag) {
-    int: i64,
-    op: u8,
-};
-var symbolsBuffer: [1024]Symbol = undefined;
-var symbols: []Symbol = undefined;
+const Frac = struct { num:i64, den:i64 };
 
 const ExpressionTag = enum { int, frac, op };
 const Expression = union(ExpressionTag) {
     int: i64,
     frac: Frac,
     op: u8,
+    pub fn printx(this: Expression) void {
+        switch (this) {
+            .int => |int| print("{} ", .{int}),
+            .frac => |frac| { printFrac(frac); print(" ", .{}); },
+            .op => |op| print("{c} ", .{op}),
+        }
+    }
+    pub fn isDivisionOperator(this: Expression) bool {
+        return switch (this) {
+            .int => false,
+            .frac => false,
+            .op => |operator| operator == '/',
+        };
+    }
 };
+var symbolsBuffer: [1024]Expression = undefined;
+var symbols: []Expression = undefined;
 var expressionsBuffer: [1024]Expression = undefined;
 var expressions: []Expression = undefined;
 
-const maxInt = std.math.maxInt(u64);
+const maxInt = std.math.maxInt(i64);
 var primes: [1024]u64 = undefined;
 
 var currentFactorization:u64 = 0;
@@ -81,23 +90,38 @@ pub fn main() !void {
 
     for (inputs) |input| {
         symbols = symbolsBuffer[0..0];
+        expressions = expressionsBuffer[0..0];
 
         if (input.len > 0) {
             try parse(input);
         }
-        
-        for (symbols) |symbol| {
-            switch (symbol) {
-                .int => |int| print("{} ", .{int}),
-                .op  => |op|  print("{c} ", .{op}),
-            }
 
+        var skip = false;
+        for (symbols, 0..) |symbol, i| {
+            symbol.printx();
+
+            if (skip) {
+                skip = false;
+                continue;
+            }
             
-            
+            if (symbol.isDivisionOperator()) {
+                const frac = Frac{ .num = symbols[i-1].int, .den = symbols[i+1].int };
+                expressions[expressions.len - 1] = Expression{ .frac = frac };
+                skip = true;
+            } else {
+                appendExpression(symbol);
+            }
+                                                 
             
         }
         print("\n", .{});
+        
+        for (expressions) |expression| {
+            expression.printx();
+        }
 
+        print("\n", .{});
         
     }
     
@@ -108,15 +132,16 @@ fn parse(string: []const u8) !void {
     var isOperatorPosition = false;
     var sign: i2 = 1;
     while (runIndex < string.len) {
+
         if (isDigitSymbol( string[runIndex] )) {
             const number = sign * parseNumber(string, &runIndex);
-            append(Symbol{ .int = number });
+            append(Expression{ .int = number });
             isOperatorPosition = true;
             sign = 1;
         }
         if (isOperatorSymbol( string[runIndex] )) {
             if (isOperatorPosition) {
-                append(Symbol{ .op = string[runIndex] });
+                append(Expression{ .op = string[runIndex] });
                 isOperatorPosition = false;
             } else if (isSignSymbol( string[runIndex] )) {
                 if (string[runIndex] == '-') {
@@ -132,8 +157,9 @@ fn parse(string: []const u8) !void {
         runIndex += 1;
     }
     switch (symbols[symbols.len - 1]) {
-        Symbol.int => {},
-        Symbol.op => { return ParseError.missingOperand; },
+        .int => {},
+        .frac => {},
+        .op => { return ParseError.missingOperand; },
     }
     
 }
@@ -152,13 +178,13 @@ fn parseNumber(string:[]const u8, runIndex:*u64) i64 {
     return num;
 }
 
-fn append(value :Symbol) void {
+fn append(value:Expression) void {
     const pos = symbols.len;
     symbols.len += 1;
     symbols[pos] = value;
 }
 
-fn appendExpression(value: Expression) void {
+fn appendExpression(value:Expression) void {
     const pos = expressions.len;
     expressions.len += 1;
     expressions[pos] = value;
@@ -181,15 +207,16 @@ fn add(a:Frac, b:Frac) Frac {
     return c;
 }
 
-fn normalize(a:Frac, lcmFac:u64) Frac {
+fn normalize(a:Frac, pLcmFac:u64) Frac {
+    const lcmFac:u63 = @intCast(pLcmFac);
     return Frac{ .num = a.num * lcmFac, .den = a.den * lcmFac };
 }
 
 fn reduceFrac(a:Frac) !Frac {
     const factorsNum = try primeFactorize(a.num);
     const factorsDen = try primeFactorize(a.den);
-    const gcd:u64 = calcGcd(factorsNum, factorsDen);
-    return Frac{ .num = a.num / gcd, .den = a.den / gcd };
+    const gcd:u63 = @intCast( calcGcd(factorsNum, factorsDen) );
+    return Frac{ .num = @divTrunc(a.num, gcd), .den = @divTrunc(a.den, gcd) };
 }
 
 fn printFrac(a: Frac) void {
@@ -224,10 +251,10 @@ fn generatePrimes() void {
     // print("\n", .{});
 }
 
-fn primeFactorize(number: u64) ![]u64 {
+fn primeFactorize(number: i64) ![]u64 {
     var facs:[]u64 = primeFactorizations[currentFactorization][0..];
     currentFactorization += 1;
-    var n:u64 = number;
+    var n:u64 = @intCast(number);
     for (facs, 0..) |*fac, i| {
         for (primes) |prime| {
             if (n % prime == 0) {
