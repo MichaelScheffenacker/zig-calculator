@@ -2,7 +2,10 @@ const std = @import("std");
 const print = std.debug.print;
 const stdin = std.io.getStdIn().reader();
 
+var xBuff:[1024]i64 = undefined;
+var xStart:u64 = undefined;
 const Frac = struct { num:i64, den:i64 };
+const PFrac = struct { num: []i64, den: []i64 };
 
 const ExpressionTag = enum { int, frac, op };
 const Expression = union(ExpressionTag) {
@@ -44,6 +47,37 @@ var inputBuffer: [128]u8 = undefined;
 
 pub fn main() !void {
     generatePrimes();
+
+    var u = PFrac{ .num = xBuff[0..0], .den = xBuff[0..0] };
+    xStart = 0;
+    u.num = xBuff[xStart..xStart];
+    u.num.len +=1; u.num[0] = 1;
+    u.num.len +=1; u.num[1] = 5;
+    u.num.len +=1; u.num[2] = 6;
+    xStart += u.num.len;
+    u.den = xBuff[xStart..xStart];
+    u.den.len +=1; u.den[0] = 2;
+    u.den.len +=1; u.den[1] = 3;
+    u.den.len +=1; u.den[2] = 4;
+    xStart += u.den.len;
+    for (u.num, 0..) |num, i| {
+        print("{}", .{num});
+        if (i < u.num.len-1) print("·", .{});
+    }
+    print("\n", .{});
+    const max = if ( u.num.len > u.den.len ) u.num.len else u.den.len;
+    const len = max * 2 - 1;
+    for (0..len) |_| {
+        print("—", .{});
+    }
+    print("\n", .{});
+    printJoin(u.den, "·");
+    for (u.den, 0..) |den, i| {
+        print("{}", .{den});
+        if (i < u.den.len-1) print("·", .{});
+    }
+    print("\n", .{});
+    
     
     const a = Frac{ .num = 5, .den = 8 };
     const b = Frac{ .num = 3, .den = 12 };
@@ -78,7 +112,7 @@ pub fn main() !void {
     //if (inputResult) |input| {
 
     const inputs: [6][]const u8 = .{
-        "3/4 + -3/7",
+        "3/4 + 3/-7",
         "asdf -12/ -88",
         "asdf-12 /-88 ",
         "-12/-88asfd",
@@ -92,9 +126,11 @@ pub fn main() !void {
         symbols = symbolsBuffer[0..0];
         expressions = expressionsBuffer[0..0];
 
-        try parse(input);
+        //  2 * 3 / 4 / 5  =  2 * (3/4) / 5
+        //  2 * 3 / (4/5)  =  2 * 3 / (4/5)
 
-        express();
+        try parse(input);
+        try express();
 
         printExpressionSlice(symbols);
         printExpressionSlice(expressions);
@@ -108,13 +144,19 @@ fn printExpressionSlice(slice: []Expression) void {
     print("\n", .{});
 }
 
-fn express() void {
+fn express() !void {
     var i:u64 = 0;
     while (i < symbols.len) {
         const symbol = symbols[i];
         if (symbol.isDivisionOperator()) {  // fraction after fraction will cause a bug rn
-            const frac = Frac{ .num = symbols[i-1].int, .den = symbols[i+1].int };
-            expressions[expressions.len - 1] = Expression{ .frac = frac };
+            var num = symbols[i-1].int;
+            var den = symbols[i+1].int;
+            if (den < 0) {
+                num *= -1;
+                den *= -1;
+            }
+            const reducedFrac = try reduceFrac( Frac{ .num = num, .den = den } );
+            expressions[expressions.len - 1] = Expression{ .frac = reducedFrac };
             i += 1;  // fraction takes symbols at i-1, i, i+1 and puts it instead of last expression
         } else {
             appendExpression(symbol);
@@ -185,6 +227,8 @@ fn appendExpression(value:Expression) void {
     expressions.len += 1;
     expressions[pos] = value;
 }
+//fn appedX(value:i64) void {
+//    const pos = x
 
 fn isDigitSymbol(symbol: u8) bool {
     return (symbol >= '0' and symbol <= '9');
@@ -223,7 +267,13 @@ fn printFac(number:u64, factors:[]u64) void {
     print("{} = ", .{number});
     for (factors) |p| { print( "{}·", .{p}); }
     print("\n", .{});
+}
 
+fn printJoin(slice:[]i64, comptime separator: []const u8) void {
+    for (slice, 0..) |element, i| {
+        print("{}", .{element});
+        if (i < slice.len-1) print(separator, .{});
+    }
 }
 
 fn generatePrimes() void {
@@ -248,9 +298,10 @@ fn generatePrimes() void {
 }
 
 fn primeFactorize(number: i64) ![]u64 {
+    const abs = if (number < 0) number * -1 else number;
     var facs:[]u64 = primeFactorizations[currentFactorization][0..];
     currentFactorization += 1;
-    var n:u64 = @intCast(number);
+    var n:u64 = @intCast(abs);
     for (facs, 0..) |*fac, i| {
         for (primes) |prime| {
             if (n % prime == 0) {
