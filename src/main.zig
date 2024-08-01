@@ -60,10 +60,7 @@ pub fn main() !void {
     u.den.len +=1; u.den[1] = 3;
     u.den.len +=1; u.den[2] = 4;
     xStart += u.den.len;
-    for (u.num, 0..) |num, i| {
-        print("{}", .{num});
-        if (i < u.num.len-1) print("·", .{});
-    }
+    printSeparatedSlice(u.num, "·");
     print("\n", .{});
     const max = if ( u.num.len > u.den.len ) u.num.len else u.den.len;
     const len = max * 2 - 1;
@@ -71,11 +68,7 @@ pub fn main() !void {
         print("—", .{});
     }
     print("\n", .{});
-    printJoin(u.den, "·");
-    for (u.den, 0..) |den, i| {
-        print("{}", .{den});
-        if (i < u.den.len-1) print("·", .{});
-    }
+    printSeparatedSlice(u.den, "·");
     print("\n", .{});
     
     
@@ -269,7 +262,7 @@ fn printFac(number:u64, factors:[]u64) void {
     print("\n", .{});
 }
 
-fn printJoin(slice:[]i64, comptime separator: []const u8) void {
+fn printSeparatedSlice(slice:[]i64, comptime separator: []const u8) void {
     for (slice, 0..) |element, i| {
         print("{}", .{element});
         if (i < slice.len-1) print(separator, .{});
