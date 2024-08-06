@@ -2,10 +2,19 @@ const std = @import("std");
 const print = std.debug.print;
 const stdin = std.io.getStdIn().reader();
 
-var xBuff:[1024]i64 = undefined;
-var xStart:u64 = undefined;
+var numBuff:[64]i64 = undefined;
+var denBuff:[64]i64 = undefined;
+var numStart:u64 = 0;
+var denStart:u64 = 0;
 const Frac = struct { num:i64, den:i64 };
 const PFrac = struct { num: []i64, den: []i64 };
+const SummandTag = enum { prod, frac };
+const Summand = union(SummandTag) {
+    prod: []i64,
+    frac: PFrac,
+};
+var summandsBuffer: [64]Summand = undefined;
+var summands: []Summand = summandsBuffer[0..0];
 
 const ExpressionTag = enum { int, frac, op };
 const Expression = union(ExpressionTag) {
@@ -48,27 +57,65 @@ var inputBuffer: [128]u8 = undefined;
 pub fn main() !void {
     generatePrimes();
 
-    var u = PFrac{ .num = xBuff[0..0], .den = xBuff[0..0] };
-    xStart = 0;
-    u.num = xBuff[xStart..xStart];
-    u.num.len +=1; u.num[0] = 1;
-    u.num.len +=1; u.num[1] = 5;
-    u.num.len +=1; u.num[2] = 6;
-    xStart += u.num.len;
-    u.den = xBuff[xStart..xStart];
-    u.den.len +=1; u.den[0] = 2;
-    u.den.len +=1; u.den[1] = 3;
-    u.den.len +=1; u.den[2] = 4;
-    xStart += u.den.len;
-    printSeparatedSlice(u.num, "·");
+    const testPrompt = "1/2+5-1*5/2/3*6";
+
+    var operator:u8 = 0;
+    var factor = testPrompt[0];
+    var i:u64 = 1;
+    var summand = PFrac{ .num = numBuff[0..1], .den = denBuff[0..0] };
+    summand.num[0] = factor;
+    numStart = 1;
+    denStart = 0;
+    
+    while (i < testPrompt.len) {
+        operator = testPrompt[i];
+        factor = testPrompt[i+1];
+
+        if (operator == '+' or operator == '-') {
+            appendSummand(summand);
+            summand = PFrac{
+                .num = numBuff[numStart..numStart],
+                .den = denBuff[denStart..denStart]
+            };            
+            
+        } else {
+            if (operator == '*') {
+                const pos = summand.num.len;
+                summand.num.len += 1;
+                summand.num[pos] = factor;
+            }
+            else if (operator == '/') {
+                const pos = summand.den.len;
+                summand.den.len += 1;
+                summand.den[pos] = factor;
+            }
+        }
+        i += 2;
+    }
+    appendSummand(summand);
+        
+    // u.num = xBuff[xStart..xStart];
+    // u.num.len +=1; u.num[0] = 1;
+    // u.num.len +=1; u.num[1] = 5;
+    // u.num.len +=1; u.num[2] = 6;
+    // xStart += u.num.len;
+    // u.den = xBuff[xStart..xStart];
+    // u.den.len +=1; u.den[0] = 2;
+    // u.den.len +=1; u.den[1] = 3;
+    // u.den.len +=1; u.den[2] = 4;
+    // xStart += u.den.len;
+
+        
+    const u = summands[2];
+    printSeparatedSlice(u.frac.num, "·");
     print("\n", .{});
-    const max = if ( u.num.len > u.den.len ) u.num.len else u.den.len;
+    const max = if ( u.frac.num.len > u.frac.den.len ) u.frac.num.len else u.frac.den.len;
     const len = max * 2 - 1;
     for (0..len) |_| {
         print("—", .{});
     }
     print("\n", .{});
-    printSeparatedSlice(u.den, "·");
+    printSeparatedSlice(u.frac.den, "·");
     print("\n", .{});
     
     
@@ -129,6 +176,20 @@ pub fn main() !void {
         printExpressionSlice(expressions);
     }
 }
+
+fn appendSummand(summand: PFrac) void {
+    const pos = summands.len;
+    //print("asdf", .{});
+    summands.len += 1;
+    if (summand.den.len == 0) {
+        summands[pos] = Summand { .prod = summand.num };
+    } else {
+        summands[pos] = Summand { .frac = summand };
+    }
+    numStart = summand.num.len;
+    denStart = summand.den.len;
+}
+
 
 fn printExpressionSlice(slice: []Expression) void {
     for (slice) |element| {
