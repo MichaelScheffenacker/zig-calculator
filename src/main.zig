@@ -12,6 +12,24 @@ const SummandTag = enum { prod, frac };
 const Summand = union(SummandTag) {
     prod: []i64,
     frac: PFrac,
+    pub fn printTop(this: Summand) void {
+        switch (this) {
+            .prod => |prod| for (0..prod.len) |_| { print(" ", .{}); },
+            .frac => |frac| printFracNum(frac),
+        }
+    }
+    pub fn printMid(this: Summand) void {
+        switch (this) {
+            .prod => |prod| printSeparatedSlice(prod, "·"),
+            .frac => |frac| for (0..calcFracWidth(frac)) |_| print("-", .{}),
+        }
+    }
+    pub fn printBot(this: Summand) void {
+        switch (this) {
+            .prod => |prod| for (0..prod.len) |_| print(" ", .{}),
+            .frac => |frac| printFracDen(frac),
+        }
+    }
 };
 var summandsBuffer: [64]Summand = undefined;
 var summands: []Summand = summandsBuffer[0..0];
@@ -57,45 +75,45 @@ var inputBuffer: [128]u8 = undefined;
 pub fn main() !void {
     generatePrimes();
 
-    const a = Frac{ .num = 5, .den = 8 };
-    const b = Frac{ .num = 3, .den = 12 };
-    const factorsA = try primeFactorize(a.den);
-    const factorsB = try primeFactorize(b.den);
-    const lcm:Lcm = calcLcm(factorsA, factorsB);
-    const aNorm = normalize(a, lcm.fac1);
-    const bNorm = normalize(b, lcm.fac2);
+    // const a = Frac{ .num = 5, .den = 8 };
+    // const b = Frac{ .num = 3, .den = 12 };
+    // const factorsA = try primeFactorize(a.den);
+    // const factorsB = try primeFactorize(b.den);
+    // const lcm:Lcm = calcLcm(factorsA, factorsB);
+    // const aNorm = normalize(a, lcm.fac1);
+    // const bNorm = normalize(b, lcm.fac2);
     
-    const c = add(aNorm, bNorm);
-    const cReduced = try reduceFrac(c);
+    // const c = add(aNorm, bNorm);
+    // const cReduced = try reduceFrac(c);
 
-    print("\n", .{});
+    // print("\n", .{});
 
-    printFrac(a);
-    print(" + ", .{});
-    printFrac(b);
-    print(" = ", .{});
-    printFrac(aNorm);
-    print(" + ", .{});
-    printFrac(bNorm);
-    print(" = ", .{});
+    // printFrac(a);
+    // print(" + ", .{});
+    // printFrac(b);
+    // print(" = ", .{});
+    // printFrac(aNorm);
+    // print(" + ", .{});
+    // printFrac(bNorm);
+    // print(" = ", .{});
     
-    printFrac(c);
-    print(" = ", .{});
-    printFrac(cReduced);
+    // printFrac(c);
+    // print(" = ", .{});
+    // printFrac(cReduced);
 
-    print("\n", .{});
+    // print("\n", .{});
 
     
     //const inputResult = stdin.readUntilDelimiterOrEof(inputBuffer[0..], '\n') catch null;
     //if (inputResult) |input| {
 
-    const inputs: [6][]const u8 = .{
+    const inputs: [2][]const u8 = .{
         "3/4 + 3/-7",
-        "asdf -12/ -88",
-        "asdf-12 /-88 ",
-        "-12/-88asfd",
-        "12 / 88",
-        "",
+        //"asdf -12/ -88",
+        "-12 /-88/7 +5*3",
+        //"-12/-88asfd",
+        //"12 / 88",
+        //"",
         //"12//88",
         //"12/",
     };
@@ -103,23 +121,82 @@ pub fn main() !void {
     for (inputs) |input| {
         symbols = symbolsBuffer[0..0];
         expressions = expressionsBuffer[0..0];
-
-        //  2 * 3 / 4 / 5  =  2 * (3/4) / 5
-        //  2 * 3 / (4/5)  =  2 * 3 / (4/5)
+        summands = summandsBuffer[0..0];
 
         try parse(input);
-        //print("{any}", .{symbols});
         try express();
 
         parseSummands();
 
         printExpressionSlice(symbols);
         printExpressionSlice(expressions);
-        printSummand(summands[0]);
         
+        print("\n", .{});
+        for (summands, 0..) |summand, i| {
+            summand.printTop();
+            if (i < summands.len-1) print("   ", .{});
+        }
+        print("\n", .{});
+        for (summands, 0..) |summand, i| {
+            summand.printMid();
+            if (i < summands.len-1) print(" + ", .{});
+        }
+        print("\n", .{});
+        for (summands, 0..) |summand, i| {
+            summand.printBot();
+            if (i < summands.len-1) print("   ", .{});
+        }
+        print("\n", .{});
+        print("\n", .{});
+        print("\n", .{});
     }
 }
 
+fn calcSliceWidth(factors: []i64) u64 {
+    var w = factors.len - 1;  // space for multiplication signs
+    for (factors) |factor| {
+        var x = factor;
+        if (x < 0) {
+            w += 1;  // space for minus sign
+        }
+        while (x != 0) {
+            w += 1;  // space for digits
+            x = @divTrunc(x, 10);  // optimization potential: logarithm
+        }
+    }
+    return w;
+}
+
+fn max(a: u64, b: u64) u64 {
+    return if (a > b) a else b;
+}
+
+fn printFracNum(x: PFrac) void {
+    const numWidth = calcSliceWidth(x.num);
+    const width = calcFracWidth(x);
+    const preWidth = (width - numWidth) / 2;
+    const postWidth = width - numWidth - preWidth;
+    for (0..preWidth) |_| { print(" ", .{}); }
+    printSeparatedSlice(x.num, "·");
+    for (0..postWidth) |_| { print(" ", .{}); }
+}
+
+fn printFracDen(x: PFrac) void {
+    const denWidth = calcSliceWidth(x.den);
+    const width = calcFracWidth(x);
+    const preWidth = (width - denWidth) / 2;
+    const postWidth = width - denWidth - preWidth;
+    for (0..preWidth) |_| { print(" ", .{}); }
+    printSeparatedSlice(x.den, "·");
+    for (0..postWidth) |_| { print(" ", .{}); }
+}
+
+fn calcFracWidth(x: PFrac) u64 {
+    const numWidth = calcSliceWidth(x.num);
+    const denWidth = calcSliceWidth(x.den);
+    return max(numWidth, denWidth);
+}    
+    
 fn printExpressionSlice(slice: []Expression) void {
     for (slice) |element| {
         element.printx();
@@ -130,15 +207,14 @@ fn printExpressionSlice(slice: []Expression) void {
 fn printSummand(u: Summand) void {
     printSeparatedSlice(u.frac.num, "·");
     print("\n", .{});
-    const max = if ( u.frac.num.len > u.frac.den.len ) u.frac.num.len else u.frac.den.len;
-    const len = max * 2 - 1;
+    const width =  max(u.frac.num.len, u.frac.den.len);
+    const len = width * 2 - 1;
     for (0..len) |_| {
         print("—", .{});
     }
     print("\n", .{});
     printSeparatedSlice(u.frac.den, "·");
     print("\n", .{});
-
 }
 
 fn parseSummands() void {
@@ -160,10 +236,10 @@ fn parseSummands() void {
         if (operator == '+' or operator == '-') {
             appendSummand(summand);
             summand = PFrac{
-                .num = numBuff[numStart..numStart],
+                .num = numBuff[numStart..numStart + 1],
                 .den = denBuff[denStart..denStart]
-            };            
-            
+            };
+            summand.num[0] = factor;
         } else {
             if (operator == '*') {
                 const pos = summand.num.len;
