@@ -171,23 +171,21 @@ fn max(a: u64, b: u64) u64 {
     return if (a > b) a else b;
 }
 
-fn printFracNum(x: PFrac) void {
-    const numWidth = calcSliceWidth(x.num);
-    const width = calcFracWidth(x);
-    const preWidth = (width - numWidth) / 2;
-    const postWidth = width - numWidth - preWidth;
-    for (0..preWidth) |_| { print(" ", .{}); }
-    printSeparatedSlice(x.num, "·");
-    for (0..postWidth) |_| { print(" ", .{}); }
+fn printFracNum(frac: PFrac) void {
+    printFracElement(frac, frac.num);
 }
 
-fn printFracDen(x: PFrac) void {
-    const denWidth = calcSliceWidth(x.den);
-    const width = calcFracWidth(x);
-    const preWidth = (width - denWidth) / 2;
-    const postWidth = width - denWidth - preWidth;
+fn printFracDen(frac: PFrac) void {
+    printFracElement(frac, frac.den);
+}
+
+fn printFracElement(frac: PFrac, element: []i64) void {
+    const elementWidth = calcSliceWidth(element);
+    const width = calcFracWidth(frac);
+    const preWidth = (width - elementWidth) / 2;
+    const postWidth = width - elementWidth - preWidth;
     for (0..preWidth) |_| { print(" ", .{}); }
-    printSeparatedSlice(x.den, "·");
+    printSeparatedSlice(element, "·");
     for (0..postWidth) |_| { print(" ", .{}); }
 }
 
