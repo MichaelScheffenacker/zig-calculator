@@ -130,45 +130,34 @@ pub fn main() !void {
 
         printExpressionSlice(symbols);
         printExpressionSlice(expressions);
-        
-        print("\n", .{});
-        for (summands, 0..) |summand, i| {
-            summand.printTop();
-            if (i < summands.len-1) print("   ", .{});
-        }
-        print("\n", .{});
-        for (summands, 0..) |summand, i| {
-            summand.printMid();
-            if (i < summands.len-1) print(" + ", .{});
-        }
-        print("\n", .{});
-        for (summands, 0..) |summand, i| {
-            summand.printBot();
-            if (i < summands.len-1) print("   ", .{});
-        }
-        print("\n", .{});
-        print("\n", .{});
-        print("\n", .{});
-    }
-}
+        printCalculation();
 
-fn calcSliceWidth(factors: []i64) u64 {
-    var w = factors.len - 1;  // space for multiplication signs
-    for (factors) |factor| {
-        var x = factor;
-        if (x < 0) {
-            w += 1;  // space for minus sign
-        }
-        while (x != 0) {
-            w += 1;  // space for digits
-            x = @divTrunc(x, 10);  // optimization potential: logarithm
-        }
     }
-    return w;
 }
 
 fn max(a: u64, b: u64) u64 {
     return if (a > b) a else b;
+}
+
+fn printCalculation() void {
+    print("\n", .{});
+    for (summands, 0..) |summand, i| {
+        summand.printTop();
+        if (i < summands.len-1) print("   ", .{});
+    }
+    print("\n", .{});
+    for (summands, 0..) |summand, i| {
+        summand.printMid();
+        if (i < summands.len-1) print(" + ", .{});
+    }
+    print("\n", .{});
+    for (summands, 0..) |summand, i| {
+        summand.printBot();
+        if (i < summands.len-1) print("   ", .{});
+    }
+    print("\n", .{});
+    print("\n", .{});
+    print("\n", .{});
 }
 
 fn printFracNum(frac: PFrac) void {
@@ -193,7 +182,22 @@ fn calcFracWidth(x: PFrac) u64 {
     const numWidth = calcSliceWidth(x.num);
     const denWidth = calcSliceWidth(x.den);
     return max(numWidth, denWidth);
-}    
+}
+
+fn calcSliceWidth(factors: []i64) u64 {
+    var w = factors.len - 1;  // space for multiplication signs
+    for (factors) |factor| {
+        var x = factor;
+        if (x < 0) {
+            w += 1;  // space for minus sign
+        }
+        while (x != 0) {
+            w += 1;  // space for digits
+            x = @divTrunc(x, 10);  // optimization potential: logarithm
+        }
+    }
+    return w;
+}
     
 fn printExpressionSlice(slice: []Expression) void {
     for (slice) |element| {
