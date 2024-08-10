@@ -14,7 +14,7 @@ const Summand = union(SummandTag) {
     frac: PFrac,
     pub fn printTop(this: Summand) void {
         switch (this) {
-            .prod => |prod| for (0..prod.len) |_| { print(" ", .{}); },
+            .prod => |prod| for (0..calcSliceWidth(prod)) |_| { print(" ", .{}); },
             .frac => |frac| printFracNum(frac),
         }
     }
@@ -26,8 +26,14 @@ const Summand = union(SummandTag) {
     }
     pub fn printBot(this: Summand) void {
         switch (this) {
-            .prod => |prod| for (0..prod.len) |_| print(" ", .{}),
+            .prod => |prod| for (0..calcSliceWidth(prod)) |_| print(" ", .{}),
             .frac => |frac| printFracDen(frac),
+        }
+    }
+    pub fn normal(this: Summand) Frac {
+        switch (this) {
+            .prod => |prod| return Frac{ .num = multiplyFactors(prod), .den = 1},
+            .frac => |frac| return pFracToNormalizedFrac(frac),
         }
     }
 };
@@ -107,10 +113,10 @@ pub fn main() !void {
     //const inputResult = stdin.readUntilDelimiterOrEof(inputBuffer[0..], '\n') catch null;
     //if (inputResult) |input| {
 
-    const inputs: [2][]const u8 = .{
+    const inputs: [3][]const u8 = .{
         "3/4 + 3/-7",
-        //"asdf -12/ -88",
-        "-12 /-88/7 +5*3",
+        "1/4 + 2/5 + 3/6 + 4/7",
+        "-12 /-88/7 +5*3+1*8/4/5",
         //"-12/-88asfd",
         //"12 / 88",
         //"",
@@ -129,35 +135,85 @@ pub fn main() !void {
         parseSummands();
 
         printExpressionSlice(symbols);
-        printExpressionSlice(expressions);
-        printCalculation();
+        //printExpressionSlice(expressions);
 
+        var sum = Frac { .num = 0, .den = 1 };
+        for (summands) |summand| {
+            const sumFactors = try primeFactorize(sum.den);
+            const summandFactors = try primeFactorize(summand.normal().den);
+            const lcm: Lcm = calcLcm(sumFactors, summandFactors);
+            const normSum = normalize(sum, lcm.fac1);
+            const normSummand = normalize(summand.normal(), lcm.fac2);
+            sum = add(normSum, normSummand);
+            // printFrac(sum);
+            // print(" ", .{});
+            // printFrac(summand.normal());
+            // print("\n", .{});
+        }
+        const reducedSum = reduceFrac(sum) catch sum;
+        //printFrac(reducedSum);
+        var num = [_]i64{reducedSum.num};
+        var den = [_]i64{reducedSum.den};
+        printCalculation(Summand{ .frac = PFrac{ .num=&num, .den=&den } });
+        print("\n", .{});
+        print("\n", .{});
+        print("\n", .{});
     }
+}
+
+fn pFracToNormalizedFrac(frac: PFrac) Frac {
+    const reducedFrac = Frac {
+        .num = multiplyFactors(frac.num),
+        .den = multiplyFactors(frac.den),
+    };
+    const signedFrac = if (reducedFrac.den < 0)
+        Frac {
+            .num = -1 * reducedFrac.num,
+            .den = -1 * reducedFrac.den,
+        } else reducedFrac;
+    return reduceFrac(signedFrac) catch signedFrac;
+}
+
+fn multiplyFactors(factors: []i64) i64 {
+    var product: i64 = 1;
+    for(factors) |factor| {
+        product *= factor;
+    }
+    return product;
 }
 
 fn max(a: u64, b: u64) u64 {
     return if (a > b) a else b;
 }
 
-fn printCalculation() void {
+fn printCalculation(sum: Summand) void {
     print("\n", .{});
     for (summands, 0..) |summand, i| {
         summand.printTop();
         if (i < summands.len-1) print("   ", .{});
     }
+    print("   ", .{});
+    sum.printTop();
+    
     print("\n", .{});
     for (summands, 0..) |summand, i| {
         summand.printMid();
         if (i < summands.len-1) print(" + ", .{});
     }
+    print(" = ", .{});
+    sum.printMid();
+    
     print("\n", .{});
     for (summands, 0..) |summand, i| {
         summand.printBot();
         if (i < summands.len-1) print("   ", .{});
     }
+    print("   ", .{});
+    sum.printBot();
+    
     print("\n", .{});
-    print("\n", .{});
-    print("\n", .{});
+    //print("\n", .{});
+    //print("\n", .{});
 }
 
 fn printFracNum(frac: PFrac) void {
@@ -268,8 +324,8 @@ fn appendSummand(summand: PFrac) void {
     } else {
         summands[pos] = Summand { .frac = summand };
     }
-    numStart = summand.num.len;
-    denStart = summand.den.len;
+    numStart += summand.num.len;
+    denStart += summand.den.len;
 }
 
 fn express() !void {
