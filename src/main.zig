@@ -21,7 +21,7 @@ const Summand = union(SummandTag) {
     pub fn printMid(this: Summand) void {
         switch (this) {
             .prod => |prod| printSeparatedSlice(prod, "·"),
-            .frac => |frac| for (0..calcFracWidth(frac)) |_| print("-", .{}),
+            .frac => |frac| for (0..calcFracWidth(frac)) |_| print("—", .{}),
         }
     }
     pub fn printBot(this: Summand) void {
@@ -115,7 +115,7 @@ pub fn main() !void {
 
     const inputs: [3][]const u8 = .{
         "3/4 + 3/-7",
-        "1/4 + 2/5 + 3/6 + 4/7",
+        "-1/4 + 1/4 +-1/8",
         "-12 /-88/7 +5*3+1*8/4/5",
         //"-12/-88asfd",
         //"12 / 88",
@@ -297,6 +297,9 @@ fn parseSummands() void {
                 .num = numBuff[numStart..numStart + 1],
                 .den = denBuff[denStart..denStart]
             };
+            if (operator == '-') {
+                factor *= -1;
+            }
             summand.num[0] = factor;
         } else {
             if (operator == '*') {
