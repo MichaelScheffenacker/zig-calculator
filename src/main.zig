@@ -115,7 +115,7 @@ pub fn main() !void {
 
     const inputs: [3][]const u8 = .{
         "3/4 + 3/-7",
-        "-1/4 + 1/4 +-1/8",
+        "-1/4 + 1/4 - 1/8",
         "-12 /-88/7 +5*3+1*8/4/5",
         //"-12/-88asfd",
         //"12 / 88",
@@ -136,26 +136,9 @@ pub fn main() !void {
 
         printExpressionSlice(symbols);
         //printExpressionSlice(expressions);
-
-        var sum = Frac { .num = 0, .den = 1 };
-        for (summands) |summand| {
-            const sumFactors = try primeFactorize(sum.den);
-            const summandFactors = try primeFactorize(summand.normal().den);
-            const lcm: Lcm = calcLcm(sumFactors, summandFactors);
-            const normSum = normalize(sum, lcm.fac1);
-            const normSummand = normalize(summand.normal(), lcm.fac2);
-            sum = add(normSum, normSummand);
-            // printFrac(sum);
-            // print(" ", .{});
-            // printFrac(summand.normal());
-            // print("\n", .{});
-        }
-        const reducedSum = reduceFrac(sum) catch sum;
-        //printFrac(reducedSum);
-        var num = [_]i64{reducedSum.num};
-        var den = [_]i64{reducedSum.den};
-        printCalculation(Summand{ .frac = PFrac{ .num=&num, .den=&den } });
-        print("\n", .{});
+        const result = calculateResult();
+        printCalculation(result);
+        
         print("\n", .{});
         print("\n", .{});
     }
@@ -186,6 +169,23 @@ fn max(a: u64, b: u64) u64 {
     return if (a > b) a else b;
 }
 
+fn calculateResult() Summand {
+    var sum = Frac { .num = 0, .den = 1 };
+    for (summands) |summand| {
+        var defaultFactors = [_]u64{1}; // of course this error handling is dysfunctional
+        const sumFactors = primeFactorize(sum.den) catch defaultFactors[0..];
+        const summandFactors = primeFactorize(summand.normal().den) catch defaultFactors[0..];
+        const lcm: Lcm = calcLcm(sumFactors, summandFactors);
+        const normSum = normalize(sum, lcm.fac1);
+        const normSummand = normalize(summand.normal(), lcm.fac2);
+        sum = add(normSum, normSummand);
+    }
+    const reducedSum = reduceFrac(sum) catch sum;
+    var num = [_]i64{reducedSum.num};
+    var den = [_]i64{reducedSum.den};
+    return Summand{ .frac = PFrac{ .num=num[0..], .den=den[0..] } };
+}
+
 fn printCalculation(sum: Summand) void {
     print("\n", .{});
     for (summands, 0..) |summand, i| {
@@ -212,8 +212,7 @@ fn printCalculation(sum: Summand) void {
     sum.printBot();
     
     print("\n", .{});
-    //print("\n", .{});
-    //print("\n", .{});
+
 }
 
 fn printFracNum(frac: PFrac) void {
