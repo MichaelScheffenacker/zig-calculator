@@ -113,7 +113,7 @@ pub fn main() !void {
 
     const inputs: [3][]const u8 = .{
         "3/4 + 3/-7",
-        "-1/4 + 1/4 - 1/8",
+        "-1/4 + 1/4 - 1/8 - 7/8",
         "-12 /-88/7 +5*3+1*8/4/5",
         //"-12/-88asfd",
         //"12 / 88",
@@ -181,7 +181,8 @@ fn calculateResult() Summand {
     den[0] = reducedSum.den;
     numStart += 1;
     denStart += 1;
-    return Summand{ .frac = PFrac{ .num=num, .den=den } };
+    return if (den[0] == 1) Summand { .prod = num } else
+        Summand{ .frac = PFrac{ .num=num, .den=den } };
 }
 
 fn printCalculation(sum: Summand) void {
