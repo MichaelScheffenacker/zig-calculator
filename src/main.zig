@@ -62,8 +62,6 @@ const Expression = union(ExpressionTag) {
 };
 var symbolsBuffer: [1024]Expression = undefined;
 var symbols: []Expression = undefined;
-var expressionsBuffer: [1024]Expression = undefined;
-var expressions: []Expression = undefined;
 
 const maxInt = std.math.maxInt(i64);
 var primes: [1024]u64 = undefined;
@@ -126,16 +124,12 @@ pub fn main() !void {
 
     for (inputs) |input| {
         symbols = symbolsBuffer[0..0];
-        expressions = expressionsBuffer[0..0];
         summands = summandsBuffer[0..0];
 
         try parse(input);
-        try express();
-
         parseSummands();
 
         printExpressionSlice(symbols);
-        //printExpressionSlice(expressions);
         const result = calculateResult();
         printCalculation(result);
         
@@ -172,7 +166,7 @@ fn max(a: u64, b: u64) u64 {
 fn calculateResult() Summand {
     var sum = Frac { .num = 0, .den = 1 };
     for (summands) |summand| {
-        var defaultFactors = [_]u64{1}; // of course this error handling is dysfunctional
+        var defaultFactors = [_]u64{1, 1}; // of course this error handling is dysfunctional
         const sumFactors = primeFactorize(sum.den) catch defaultFactors[0..];
         const summandFactors = primeFactorize(summand.normal().den) catch defaultFactors[0..];
         const lcm: Lcm = calcLcm(sumFactors, summandFactors);
@@ -181,9 +175,13 @@ fn calculateResult() Summand {
         sum = add(normSum, normSummand);
     }
     const reducedSum = reduceFrac(sum) catch sum;
-    var num = [_]i64{reducedSum.num};
-    var den = [_]i64{reducedSum.den};
-    return Summand{ .frac = PFrac{ .num=num[0..], .den=den[0..] } };
+    var num = numBuff[numStart..numStart + 1];
+    var den = denBuff[denStart..denStart + 1];
+    num[0] = reducedSum.num;
+    den[0] = reducedSum.den;
+    numStart += 1;
+    denStart += 1;
+    return Summand{ .frac = PFrac{ .num=num, .den=den } };
 }
 
 fn printCalculation(sum: Summand) void {
@@ -330,27 +328,6 @@ fn appendSummand(summand: PFrac) void {
     denStart += summand.den.len;
 }
 
-fn express() !void {
-    var i:u64 = 0;
-    while (i < symbols.len) {
-        const symbol = symbols[i];
-        if (symbol.isDivisionOperator()) {  // fraction after fraction will cause a bug rn
-            var num = symbols[i-1].int;
-            var den = symbols[i+1].int;
-            if (den < 0) {
-                num *= -1;
-                den *= -1;
-            }
-            const reducedFrac = try reduceFrac( Frac{ .num = num, .den = den } );
-            expressions[expressions.len - 1] = Expression{ .frac = reducedFrac };
-            i += 1;  // fraction takes symbols at i-1, i, i+1 and puts it instead of last expression
-        } else {
-            appendExpression(symbol);
-        }
-        i += 1;
-    }
-}
-
 fn parse(string: []const u8) !void {
     var runIndex:u64 = 0;
     var isOperatorPosition = false;
@@ -407,14 +384,6 @@ fn append(value:Expression) void {
     symbols.len += 1;
     symbols[pos] = value;
 }
-
-fn appendExpression(value:Expression) void {
-    const pos = expressions.len;
-    expressions.len += 1;
-    expressions[pos] = value;
-}
-//fn appedX(value:i64) void {
-//    const pos = x
 
 fn isDigitSymbol(symbol: u8) bool {
     return (symbol >= '0' and symbol <= '9');
