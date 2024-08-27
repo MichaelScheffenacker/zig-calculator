@@ -1,6 +1,7 @@
 const std = @import("std");
 const print = std.debug.print;
 const stdin = std.io.getStdIn().reader();
+const zigTime = std.time;
 
 var numBuff:[64]i64 = undefined;
 var denBuff:[64]i64 = undefined;
@@ -77,7 +78,10 @@ const Lcm = struct { fac1:u64, fac2:u64 };
 var inputBuffer: [128]u8 = undefined;
 
 pub fn main() !void {
+    var timer: std.time.Timer = try std.time.Timer.start();
     generatePrimes();
+    //time(timer);
+    print("{}\n", .{timer.lap()} );
 
     // const a = Frac{ .num = 5, .den = 8 };
     // const b = Frac{ .num = 3, .den = 12 };
@@ -136,6 +140,10 @@ pub fn main() !void {
         print("\n", .{});
         print("\n", .{});
     }
+}
+
+fn time(timer: std.time.Timer) void {
+    print("{}\n", .{timer.lap()} );
 }
 
 fn pFracToNormalizedFrac(frac: PFrac) Frac {
