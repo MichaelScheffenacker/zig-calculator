@@ -187,7 +187,30 @@ therefore the array's value can be used as boolean prime indicator.
 
 [apparently the smallest untouched multiple of a new prime is its square, might want to include that ...]
 
+More ideas:
+\begin{itemize}
+ \item Condensate eight Booleans into a byte; would reduce memory usage to an eighth. To evaluate the overhead of extracting the values would require testing.
+ \begin{itemize}
+  \item Lower numbers would require to bitwise-and their primality out of the byte.
+  \item In the range of larger numbers, prime numbers get more sparse.
+  The last prime number before $2^{33}$ is 8\,589\,934\,583.
+  According to Wolfram Alpha 8\,589\,934\,583 is the 393\,615\,806\textsuperscript{th} prime number.
+  This means on average up to this prime number about every 22\textsuperscript{nd} number is prime.
+  So even if the prime numbers were evenly spread over this range almost two out of three bytes would be zero,
+  allowing a simple, initial zero check before having to bitwise-and the number.
+  (If this this actually more efficient is questionable since the bitwise and should be cheap anyways
+  while transferring the data from memory might be the expensive operation.)
+  \item Another idea:
+  If most of the bytes are zero anyways there might be a relatively simple function that identifies the offsets of most of the zero bytes.
+  In this case running this function from cache might be faster than fetching all this data from main memory.
+  On the other hand the prefetcher might nullify this advantage.
+ \end{itemize}
+ \item Skip every second value.
+ Since, except for two, even numbers are not prime anyways,
+ skipping every even number should half calculation time and memory space.
 
+
+\end{itemize}
 
 
 
