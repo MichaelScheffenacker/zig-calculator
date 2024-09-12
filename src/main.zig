@@ -2,6 +2,7 @@ const std = @import("std");
 const print = std.debug.print;
 const stdin = std.io.getStdIn().reader();
 const zigTime = std.time;
+const expect = std.testing.expect;
 
 var numBuff:[64]i64 = undefined;
 var denBuff:[64]i64 = undefined;
@@ -141,6 +142,11 @@ pub fn main() !void {
         print("\n", .{});
         print("\n", .{});
     }
+
+    print("   78   \n", .{});
+    print("——————     78       78  \n", .{});
+    print(" _____  ————————  —=====\n", .{});
+    print("√12*45  √(12*45)  √12*45\n", .{});
 }
 
 fn time(timer: *std.time.Timer) void {
@@ -538,4 +544,5 @@ fn calcGcd(factors1:[]u64, factors2:[]u64) u64 {
 
 test "simple test" {
     //try std.testing.expectEqual(@as(i32, 42), list.pop());
+    try expect(true);
 }
