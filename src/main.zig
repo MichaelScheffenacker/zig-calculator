@@ -79,9 +79,10 @@ var inputBuffer: [128]u8 = undefined;
 
 pub fn main() !void {
     var timer: std.time.Timer = try std.time.Timer.start();
+    time(&timer);
     generatePrimes();
-    //time(timer);
-    print("{}\n", .{timer.lap()} );
+    time(&timer);
+    
 
     // const a = Frac{ .num = 5, .den = 8 };
     // const b = Frac{ .num = 3, .den = 12 };
@@ -142,7 +143,7 @@ pub fn main() !void {
     }
 }
 
-fn time(timer: std.time.Timer) void {
+fn time(timer: *std.time.Timer) void {
     print("{}\n", .{timer.lap()} );
 }
 
