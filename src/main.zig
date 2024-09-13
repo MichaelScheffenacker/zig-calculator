@@ -542,7 +542,21 @@ fn calcGcd(factors1:[]u64, factors2:[]u64) u64 {
     }
 }
 
+
+
 test "simple test" {
-    //try std.testing.expectEqual(@as(i32, 42), list.pop());
-    try expect(true);
+    var arr:[4]i8 = undefined;
+    var slice: []i8 = arr[0..0];
+    slice = app(i8, 2, slice);
+    slice = app(i8, 3, slice);
+    print("{any}\n", .{slice});
+    try expect(slice[1] == 3);
+}
+
+fn app(comptime T: type, value: T, slice: []T) []T {
+    var newSlice = slice;
+    const pos = newSlice.len;
+    newSlice.len += 1;
+    newSlice[pos] = value;
+    return newSlice;
 }
