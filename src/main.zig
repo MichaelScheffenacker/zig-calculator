@@ -461,11 +461,6 @@ fn generatePrimes() void {
             p += 1;
         }
     }
-    
-    // for (primes[0..8]) |prime| { print("{} ", .{prime}); }
-    // print("... ", .{});
-    // for (primes[1018..]) |prime| { print("{} ", .{prime}); }
-    // print("\n", .{});
 }
 
 fn primeFactorize(number: i64) ![]u64 {
@@ -559,4 +554,14 @@ fn app(comptime T: type, value: T, slice: []T) []T {
     newSlice.len += 1;
     newSlice[pos] = value;
     return newSlice;
+}
+
+test "prime array test" {
+    generatePrimes();
+    try expect(primes[0] == 2);
+    try expect(primes[1] == 3);
+    try expect(primes[2] == 5);
+    try expect(primes[1021] == 8123);
+    try expect(primes[1022] == 8147);
+    try expect(primes[1023] == 8161);
 }
