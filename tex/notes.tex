@@ -209,8 +209,26 @@ More ideas:
  Since, except for two, even numbers are not prime anyways,
  skipping every even number should half calculation time and memory space.
 
-
 \end{itemize}
+
+
+\subsection*{2024-09-16}
+
+Numbers up to $2^{33}$ obviously requires 64 bit unsigned integers;
+to save space it might be sufficient to utilize prime numbers up to $2^{32}$.
+The largest prime number smaller than $2^{32}$ is $2^{32} - 5 = 4\,294\,967\,291$
+which is the 203\,280\,221\textsuperscript{st} prime number.
+Therefore an array holding all primes numbers up to $2^{32} - 5$ as unsigned 32 bit integers would require around 800\,MB.
+The closest prime number below $(2^{32} - 5)^2$ is $(2^{32} - 5)^2 - 2 = 18\,446\,744\,030\,759\,878\,679$.
+But integers greater than this number can still be factorized by utilizing $2^{32} - 5$
+since the division of $(2^{32} - 5)^2 - 2$ will fail
+and therefore render it prime.
+But for larger integers divisions will succeed
+since they are not prime and therefore prime numbers up to $2^{32} - 5$ will factorize them.
+The first number this will fail is the first prime number larger than $(2^{32} - 5)^2$
+which is $(2^{32} - 5)^2 + 40 = 18\,446\,744\,030\,759\,878\,721$.
+Therefore every integer up to 18\,446\,744\,030\,759\,878\,720 can be factorized by the set of all prime numbers up to $2^{32} - 5$.
+
 
 
 
