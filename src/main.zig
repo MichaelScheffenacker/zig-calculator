@@ -539,7 +539,33 @@ fn calcGcd(factors1:[]u64, factors2:[]u64) u64 {
 
 
 
-test "simple test" {
+fn AppendableSlice(comptime T: type) type {
+    return struct {
+        const This = @This();
+        slice: []T,
+        pub fn init(buffer: []T) This {
+            return This{ .slice = buffer[0..0] };
+        }
+        pub fn append(this: This, value: T) This {
+            var slice = this.slice;
+            const pos = slice.len;
+            slice.len += 1;
+            slice[pos] = value;
+            return This{ .slice = slice };
+        }
+    };
+}
+
+test "AppendableSlice test" {
+    var buff:[8]i8 = undefined;
+    var slice = AppendableSlice(i8).init(&buff);
+    slice = slice.append(2);
+    slice = slice.append(3);
+    try expect(slice.slice[0] == 2);
+    try expect(slice.slice[1] == 3);
+}
+
+test "append test" {
     var arr:[4]i8 = undefined;
     var slice: []i8 = arr[0..0];
     slice = app(i8, 2, slice);
