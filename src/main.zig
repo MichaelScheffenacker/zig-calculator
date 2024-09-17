@@ -539,12 +539,12 @@ fn calcGcd(factors1:[]u64, factors2:[]u64) u64 {
 
 
 
-fn AppendableSlice(comptime T: type) type {
-    return struct {
-        const This = @This();
+fn AppendableSlice(comptime T: type) type {  // to create a generic (struct) a function returning generic Type is required ...
+    return struct {                          // ... this leads to utilization of an anonymous struct ...
+        const This = @This();                // ... therefore instead of referencing the scruct by name the builtin function @This() is used.
         slice: []T,
-        pub fn init(buffer: []T) This {
-            return This{ .slice = buffer[0..0] };
+        pub fn init(buffer: []T) This {      // Since Zig requires arrays sizes to be known at compile time, passing it by reference is required ...
+            return This{ .slice = buffer[0..0] };  // ... here; for some reason a slice and can be used as such reference.
         }
         pub fn append(this: This, value: T) This {
             var slice = this.slice;
