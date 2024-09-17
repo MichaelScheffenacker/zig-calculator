@@ -333,7 +333,6 @@ fn parseSummands() void {
 
 fn appendSummand(summand: PFrac) void {
     const pos = summands.len;
-    //print("asdf", .{});
     summands.len += 1;
     if (summand.den.len == 0) {
         summands[pos] = Summand { .prod = summand.num };
@@ -477,7 +476,6 @@ fn primeFactorize(number: i64) ![]u64 {
             }
             if (n == 1) {
                 facs = facs[0..i];
-                // printFac(number, facs);
                 return facs;
             }
             if (prime > n) { return PrimeFacErr.miss; }
@@ -494,8 +492,6 @@ fn calcLcm(factors1:[]u64, factors2:[]u64) Lcm {
     while (true) {
         const val1:u64 = if (index1 < factors1.len) factors1[index1] else maxInt;
         const val2:u64 = if (index2 < factors2.len) factors2[index2] else maxInt;
-
-        // print("{} {}\n", .{lcm.fac1, lcm.fac2});
         
         if (val1 == maxInt and val2 == maxInt) {  return lcm; }
                 
@@ -520,8 +516,6 @@ fn calcGcd(factors1:[]u64, factors2:[]u64) u64 {
     while (true) {
         const val1:u64 = if (index1 < factors1.len) factors1[index1] else maxInt;
         const val2:u64 = if (index2 < factors2.len) factors2[index2] else maxInt;
-
-        // print("{} {} {} {} {} \n", .{index1, index2, val1, val2, gcd});
 
         if (val1 == maxInt and val2 == maxInt) {  return gcd; }
 
@@ -563,23 +557,6 @@ test "AppendableSlice test" {
     slice = slice.append(3);
     try expect(slice.slice[0] == 2);
     try expect(slice.slice[1] == 3);
-}
-
-test "append test" {
-    var arr:[4]i8 = undefined;
-    var slice: []i8 = arr[0..0];
-    slice = app(i8, 2, slice);
-    slice = app(i8, 3, slice);
-    print("{any}\n", .{slice});
-    try expect(slice[1] == 3);
-}
-
-fn app(comptime T: type, value: T, slice: []T) []T {
-    var newSlice = slice;
-    const pos = newSlice.len;
-    newSlice.len += 1;
-    newSlice[pos] = value;
-    return newSlice;
 }
 
 test "prime array test" {
