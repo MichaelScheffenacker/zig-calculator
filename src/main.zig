@@ -4,12 +4,51 @@ const stdin = std.io.getStdIn().reader();
 const zigTime = std.time;
 const expect = std.testing.expect;
 
+fn AppendableSlice(comptime T: type) type {  // to create a generic (struct) a function returning generic Type is required ...
+    return struct {                          // ... this leads to utilization of an anonymous struct ...
+        const This = @This();                // ... therefore instead of referencing the scruct by name the builtin function @This() is used.
+        slice: []T,
+        pub fn init(buffer: []T) This {      // Since Zig requires arrays sizes to be known at compile time, passing it by reference is required ...
+            return This{ .slice = buffer[0..0] };  // ... here; for some reason a slice and can be used as such reference.
+        }
+        pub fn append(this: This, value: T) This {
+            var slice = this.slice;
+            const pos = slice.len;
+            slice.len += 1;
+            slice[pos] = value;
+            return This{ .slice = slice };
+        }
+    };
+}
+
 var numBuff:[64]i64 = undefined;
 var denBuff:[64]i64 = undefined;
 var numStart:u64 = 0;
 var denStart:u64 = 0;
 const Frac = struct { num:i64, den:i64 };
 const PFrac = struct { num: []i64, den: []i64 };
+
+const ExpressionTag = enum { int, frac, op };
+const Expression = union(ExpressionTag) {
+    int: i64,
+    frac: Frac,
+    op: u8,
+    pub fn printx(this: Expression) void {
+        switch (this) {
+            .int => |int| print("{} ", .{int}),
+            .frac => |frac| { printFrac(frac); print(" ", .{}); },
+            .op => |op| print("{c} ", .{op}),
+        }
+    }
+    pub fn isDivisionOperator(this: Expression) bool {
+        return switch (this) {
+            .int => false,
+            .frac => false,
+            .op => |operator| operator == '/',
+        };
+    }
+};
+
 const SummandTag = enum { prod, frac };
 const Summand = union(SummandTag) {
     prod: []i64,
@@ -39,29 +78,9 @@ const Summand = union(SummandTag) {
         }
     }
 };
+
 var summandsBuffer: [64]Summand = undefined;
 var summands: []Summand = summandsBuffer[0..0];
-
-const ExpressionTag = enum { int, frac, op };
-const Expression = union(ExpressionTag) {
-    int: i64,
-    frac: Frac,
-    op: u8,
-    pub fn printx(this: Expression) void {
-        switch (this) {
-            .int => |int| print("{} ", .{int}),
-            .frac => |frac| { printFrac(frac); print(" ", .{}); },
-            .op => |op| print("{c} ", .{op}),
-        }
-    }
-    pub fn isDivisionOperator(this: Expression) bool {
-        return switch (this) {
-            .int => false,
-            .frac => false,
-            .op => |operator| operator == '/',
-        };
-    }
-};
 var symbolsBuffer: [1024]Expression = undefined;
 var symbols: []Expression = undefined;
 
@@ -532,23 +551,6 @@ fn calcGcd(factors1:[]u64, factors2:[]u64) u64 {
 }
 
 
-
-fn AppendableSlice(comptime T: type) type {  // to create a generic (struct) a function returning generic Type is required ...
-    return struct {                          // ... this leads to utilization of an anonymous struct ...
-        const This = @This();                // ... therefore instead of referencing the scruct by name the builtin function @This() is used.
-        slice: []T,
-        pub fn init(buffer: []T) This {      // Since Zig requires arrays sizes to be known at compile time, passing it by reference is required ...
-            return This{ .slice = buffer[0..0] };  // ... here; for some reason a slice and can be used as such reference.
-        }
-        pub fn append(this: This, value: T) This {
-            var slice = this.slice;
-            const pos = slice.len;
-            slice.len += 1;
-            slice[pos] = value;
-            return This{ .slice = slice };
-        }
-    };
-}
 
 test "AppendableSlice test" {
     var buff:[8]i8 = undefined;
