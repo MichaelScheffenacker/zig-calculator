@@ -1,6 +1,7 @@
 \documentclass[a4paper,10pt]{article}
 \usepackage[utf8]{inputenc}
-% \usepackage{amsmath,mathtools}
+\usepackage{amsfonts}
+\usepackage{mathtools}
 
 %opening
 \title{Calculator Notes}
@@ -229,8 +230,50 @@ The first number this will fail is the first prime number larger than $(2^{32} -
 which is $(2^{32} - 5)^2 + 40 = 18\,446\,744\,030\,759\,878\,721$.
 Therefore every integer up to 18\,446\,744\,030\,759\,878\,720 can be factorized by the set of all prime numbers up to $2^{32} - 5$.
 
+\subsection*{2024-09-19}
+Okay, we need some nomenclature here:
+\begin{itemize}
+ \item $B_{32} := 2^{32} = 4\,294\,967\,296$ one above the largest \texttt{unsigned integer}
+ \item $B^-_{32} := B_{32} - 5 = 2^{32} - 5 = 4\,294\,967\,291$ the largest prime number smaller than $B_{32}$ (203\,280\,221\textsuperscript{st} prime number)
+ \item $B^+_{32} := B_{32} + 15 = 2^{32} + 15 = 4\,294\,967\,311$ the smallest prime number larger than $B_{32}$ (203\,280\,222\textsuperscript{nd} prime number)
+ \item $B_{\dot{64}} := {B^-_{32}}^2 = (2^{32} - 5)^2 = $
+ \item $B^-_{\dot{64}} := B_{\dot{64}} - 2 = (2^{32} - 5)^2 - 2 = 18\,446\,744\,030\,759\,878\,679$
+ \item $B^+_{\dot{64}} := B_{\dot{64}} + 40 = (2^{32} - 5)^2 + 40 = 18\,446\,744\,030\,759\,878\,721$
+\end{itemize}
 
 
+There is an error in the considerations above:
+Primes numbers larger than $B_{\dot{64}}$ can actually be detected
+since finding no prime divisor up to $B^-_{32}$ simply means the number in question is prime;
+this is true up to the smallest number that has two prime factors larger than $B^-_{32}$.
+(For example this is not true for $B^-_{32}\cdot B^+_{32}$
+since $B^-_{32}$ is in the \texttt{prime number array}
+and after the division the result is $B^+_{32}$ which turns out to be prime and the factorization is complete.)
+The smallest number composed of the smallest two prime numbers larger than $B^-_{32}$ is ${B^+_{32}}^2 = 18\,446\,744\,202\,558\,570\,721$.
+${B^+_{32}}^2$ is 171\,798\,692\,000 larger than $B^+_{\dot{64}}$,
+the former candidate for the upper limit of the prime factorization with factors up to $B^-_{32}$.
 
+\subsection*{2024-09-23}
+
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\Bm}[1]{B^-_{32}}
+\newcommand{\Bp}[1]{B^+_{32}}
+\newcommand{\set}[1]{\lbrace \, {#1} \, \rbrace}
+\newcommand{\Set}[2]{\set{ {#1} \;|\; {#2} }}
+
+Let's try to bring this into a more formal form.
+$\PP$ the Set of all prime numbers.
+
+$$\PP_{\Bm{32}} = \Set{p}{p \in \PP \leq \Bm{32}}$$
+
+$$\PP_{\Bp{32}} = \Set{p}{p \in \PP \leq \Bp{32}} = \set{2, 3, 5, \dots, \Bm{32}, \Bp{32}}$$
+
+$$\PP_{x} \coloneq \Set{p}{p \in \PP \leq x \in \PP}$$
+
+$n \coloneq |\PP_x|$; $p_i \in \PP$
+
+$$\PP_{p_n}
+= \set{2, 3, 5, \dots, p_n}
+= \set{p_1, p_2, p_3, \dots, p_{n-1}, p_n}$$
 
 \end{document}
