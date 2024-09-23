@@ -2,6 +2,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage{amsfonts}
 \usepackage{mathtools}
+\usepackage{soul}
 
 %opening
 \title{Calculator Notes}
@@ -256,6 +257,7 @@ the former candidate for the upper limit of the prime factorization with factors
 \subsection*{2024-09-23}
 
 \newcommand{\PP}{\mathbb{P}}
+\newcommand{\NN}{\mathbb{N}}
 \newcommand{\Bm}[1]{B^-_{32}}
 \newcommand{\Bp}[1]{B^+_{32}}
 \newcommand{\set}[1]{\lbrace \, {#1} \, \rbrace}
@@ -275,5 +277,27 @@ $n \coloneq |\PP_x|$; $p_i \in \PP$
 $$\PP_{p_n}
 = \set{2, 3, 5, \dots, p_n}
 = \set{p_1, p_2, p_3, \dots, p_{n-1}, p_n}$$
+
+An integer $x \in \NN \geq 2$ is called factorizable by $\PP_{p_n}$
+if either all prime factors $p_i$ of $x$ are in $\PP_{p_n}$
+or if by utilizing $\PP_{p_n}$ it can be guaranteed that $x$ is prime itself
+and therefore its only prime factor.
+Any $x$ is factorizable by $\PP$ since by definition
+if it is not it is prime itself.
+But because $\PP_{p_n}$ is bounded there are $x$ larger than $p_n$
+that have prime factors larger than $p_n$ and can potentially not be factorized.
+It might seem like no number larger than $p_n$ can be factorized by $\PP_{p_n}$
+since any power of two can be factorized by any $\PP_{p_n}$.
+In fact any number with $m_i \in \NN_0$ that has the form
+
+$$2^{m_1}\cdot3^{m_2}\cdot5^{m_3}\cdot \dots p_{n-1}^{m_{n-1}} \cdot p_n^{m_n}
+= \prod_{i=1}^n p_i^{m_i} $$
+is factorizable by $\PP_{p_n}$.
+\st{The Sieve of Eratosthenes utilizes a similar principle
+to remove all non prime numbers from its set.}
+[Eratosthenes removes all multiples of any prime number of the set.
+This means that also any higher primes larger than $p_n$ are removed.
+But somehow (up to $p_n$?) all the numbers are met.
+There might lie the core of the proof?!]
 
 \end{document}
