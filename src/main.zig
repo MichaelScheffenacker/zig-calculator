@@ -374,13 +374,13 @@ fn parse(string: []const u8) !void {
     while (runIndex < string.len) {
         if (isDigitSymbol(string[runIndex])) {
             const number = sign * parseNumber(string, &runIndex);
-            append(Expression{ .int = number });
+            symbols = symbols.append(Expression{ .int = number });  // do not forget to assign the return value
             isOperatorPosition = true;
             sign = 1;
         }
         if (isOperatorSymbol(string[runIndex])) {
             if (isOperatorPosition) {
-                append(Expression{ .op = string[runIndex] });
+                symbols = symbols.append(Expression{ .op = string[runIndex] });
                 isOperatorPosition = false;
             } else if (isSignSymbol(string[runIndex])) {
                 if (string[runIndex] == '-') {
@@ -416,12 +416,6 @@ fn parseNumber(string: []const u8, runIndex: *u64) i64 {
         runIndex.* += 1; // ... special care is required.
     }
     return num;
-}
-
-fn append(value: Expression) void {
-    const pos = symbols.slice.len;
-    symbols.slice.len += 1;
-    symbols.slice[pos] = value;
 }
 
 fn isDigitSymbol(symbol: u8) bool {
