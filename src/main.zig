@@ -18,6 +18,12 @@ fn AppendableSlice(comptime T: type) type { // to create a generic (struct) a fu
             slice[pos] = value;
             return This{ .slice = slice };
         }
+        pub fn printSlice(this: This) void {
+            for (this.slice) |element| {
+                element.printx();
+            }
+            print("\n", .{});
+        }
     };
 }
 
@@ -158,7 +164,7 @@ pub fn main() !void {
         try parse(input);
         parseSummands();
 
-        printExpressionSlice(symbols.slice);
+        symbols.printSlice();
         const result = calculateResult();
         printCalculation(result);
 
@@ -294,13 +300,6 @@ fn calcSliceWidth(factors: []i64) u64 {
         }
     }
     return w;
-}
-
-fn printExpressionSlice(slice: []Expression) void {
-    for (slice) |element| {
-        element.printx();
-    }
-    print("\n", .{});
 }
 
 fn printSummand(u: Summand) void {
