@@ -3,6 +3,7 @@
 \usepackage{amsfonts}
 \usepackage{mathtools}
 \usepackage{soul}
+\usepackage[style=iso]{datetime2}
 
 %opening
 \title{Calculator Notes}
@@ -237,7 +238,7 @@ Okay, we need some nomenclature here:
  \item $B_{32} := 2^{32} = 4\,294\,967\,296$ one above the largest \texttt{unsigned integer}
  \item $B^-_{32} := B_{32} - 5 = 2^{32} - 5 = 4\,294\,967\,291$ the largest prime number smaller than $B_{32}$ (203\,280\,221\textsuperscript{st} prime number)
  \item $B^+_{32} := B_{32} + 15 = 2^{32} + 15 = 4\,294\,967\,311$ the smallest prime number larger than $B_{32}$ (203\,280\,222\textsuperscript{nd} prime number)
- \item $B_{\dot{64}} := {B^-_{32}}^2 = (2^{32} - 5)^2 = $
+ \item $B_{\dot{64}} := {B^-_{32}}^2 = (2^{32} - 5)^2$
  \item $B^-_{\dot{64}} := B_{\dot{64}} - 2 = (2^{32} - 5)^2 - 2 = 18\,446\,744\,030\,759\,878\,679$
  \item $B^+_{\dot{64}} := B_{\dot{64}} + 40 = (2^{32} - 5)^2 + 40 = 18\,446\,744\,030\,759\,878\,721$
 \end{itemize}
@@ -258,6 +259,7 @@ the former candidate for the upper limit of the prime factorization with factors
 
 \newcommand{\PP}{\mathbb{P}}
 \newcommand{\NN}{\mathbb{N}}
+\newcommand{\TT}{\mathbb{T}}
 \newcommand{\Bm}[1]{B^-_{32}}
 \newcommand{\Bp}[1]{B^+_{32}}
 \newcommand{\set}[1]{\lbrace \, {#1} \, \rbrace}
@@ -290,8 +292,9 @@ It might seem like no number larger than $p_n$ can be factorized by $\PP_{p_n}$
 since any power of two can be factorized by any $\PP_{p_n}$.
 In fact any number with $m_i \in \NN_0$ that has the form
 
-$$2^{m_1}\cdot3^{m_2}\cdot5^{m_3}\cdot \dots p_{n-1}^{m_{n-1}} \cdot p_n^{m_n}
+$$2^{m_1} \cdot 3^{m_2} \cdot 5^{m_3} \cdot \ldots \cdot p_{n-1}^{m_{n-1}} \cdot p_n^{m_n}
 = \prod_{i=1}^n p_i^{m_i} $$
+
 is factorizable by $\PP_{p_n}$.
 \st{The Sieve of Eratosthenes utilizes a similar principle
 to remove all non prime numbers from its set.}
@@ -299,5 +302,60 @@ to remove all non prime numbers from its set.}
 This means that also any higher primes larger than $p_n$ are removed.
 But somehow (up to $p_n$?) all the numbers are met.
 There might lie the core of the proof?!]
+
+\subsection*{2025-01-24}
+
+\subsubsection*{Attempt of some basic definitions}
+
+\emph{Prime factorizations} are from now on simply called \emph{factorizations}.
+
+\emph{The set of all prime numbers} $\PP = \set{2, 3, 5, 7 \dots }$.
+
+The convention to use from now on lowercase p only for prime numbers $p \in \PP$.
+
+\emph{Factorization Set} is a set of consecutive prime numbers that can be utilized to factorize integers.
+
+$$\PP_{x} \coloneq \Set{p}{p \leq x \in \PP}$$
+
+$n \coloneq |\PP_x|$
+
+$$\PP_{p_n}
+= \set{2, 3, 5, \dots, p_n}
+= \set{p_1, p_2, p_3, \dots, p_{n-1}, p_n}$$
+
+The set of all natural numbers greater or equal than $2$ and less or equal than $m$ are called a \emph{Test Set}.
+
+$$[m] \coloneq \set{2, 3, \dots, m}$$
+
+The \emph{factorizability of a natural number} $x \in \NN \ge 2$ by a Factorization Set $\PP_{p_n}$
+means that there is a (efficient) algorithm utilizing the numbers of this set to factorize the natural number.
+The \emph{factorizability of a Test Set} $[m]$ means that that the Factorization Set has the ability to
+factorize all numbers in the Test Set.
+The Factorization Set $\PP_{p_n}$ has in general the ability to factorize multiple Test Sets;
+the set off all this Test Sets is $\TT_{p_n}$.
+
+$$\TT_{p_n} \coloneq \Set{t}{t\text{ is factorizable by }\PP_{p_n}}$$
+
+\subsubsection*{Reasoning}
+
+The question is now, what is the largest Test Set $[m^{p_n}_{max}]$ of $\TT_{p_n}$.
+$\PP_{p_n}$ is obviously able to factorize $[p_n]$ since $\PP_{p_n}$ contains all prime numbers in $[p_n]$.
+If $x \in [p_n]$ is a prime number, it will simply be factorized into itself $x \in \PP_{p_n}$.
+If $x$ is not a prime number, it will be factorized into multiple prime numbers $p_i$.
+Since the product of prime numbers is greater than each of its factors,
+each of those prime numbers has to be smaller than $x$, therefore each $p_i \in \PP_{p_n}$.
+
+At this point we assume that the algorithm for factorization executes the following steps:
+
+\begin{itemize}
+ \item Try to divide consecutively by each prime number $p_i \in \PP_{p_n}$.
+ \item If the integer division is successful, try to repeat the division.
+ \item If the integer division is not successful anymore, continue to the next $p_i$.
+ \item In any case after a successful integer division the residual value is 1, the factorization is complete.
+ \item If after the last $p_i$ (which is $p_n$) the residual value is still larger than 1, the factorization failed.
+\end{itemize}
+
+
+
 
 \end{document}
