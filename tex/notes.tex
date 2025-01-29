@@ -413,5 +413,22 @@ But in that case the number would be in $P_n$ and would already have been factor
 by the Algorithm.
 The trick is here, that $2 \cdot p_{n+1}$ is the smallest non-prime number not in $P_n$.)
 
+Utilizing this method, every $m$-factor number with $m-1$ factors in $P_n$ could
+be factorized.
+In practice, given an arbitrary number, $m$ is unknown.
+Therefore the residual of the Algorithm does not automatically have to be prime.
+The question is now, what is the largest number (residual) that is guaranteed to be prime
+given a certain Factorization Set.
+$p_{n-1} \cdot p_n$, $p_n^2$ and $p_n \cdot p_{n+1}$ can still be factorized.
+$p_{n+1}^2$ is not in $P_n$.
+(By applying a square root, it could still be determined that $p_{n+1}$ is prime.
+But it would hardly make any sense to implement a separate procedure just to cover
+``a few'' extra numbers.)
+$p_{n+1} \cdot p_{n+2}$ cannot be factorized anymore without ``extending'' $\PP_{p_n}$.
+
+If this reasoning is correct, $p_{n+1}^2 - 1$ is the largest number,
+the Algorithm can be applied to and the residual to be safely assumed to be prime.
+This allows the Factorization Algorithm to extend its ``range'' to more than the
+square of the maximal element of its Factorization Set.
 
 \end{document}
