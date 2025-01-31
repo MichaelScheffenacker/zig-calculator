@@ -34,8 +34,7 @@ var denStart: u64 = 0;
 const Frac = struct { num: i64, den: i64 };
 const PFrac = struct { num: []i64, den: []i64 };
 
-const ExpressionTag = enum { int, frac, op };
-const Expression = union(ExpressionTag) {
+const Expression = union(enum) {
     int: i64,
     frac: Frac,
     op: u8,
@@ -58,8 +57,7 @@ const Expression = union(ExpressionTag) {
     }
 };
 
-const SummandTag = enum { prod, frac };
-const Summand = union(SummandTag) {
+const Summand = union(enum) {
     prod: []i64,
     frac: PFrac,
     pub fn printTop(this: Summand) void {
