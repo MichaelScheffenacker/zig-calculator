@@ -431,4 +431,33 @@ the Algorithm can be applied to and the residual to be safely assumed to be prim
 This allows the Factorization Algorithm to extend its ``range'' to more than the
 square of the maximal element of its Factorization Set.
 
+\subsubsection*{Proof?}
+
+\marginpar{2025-02-06}
+
+There might lie a proof by contradiction within this.
+
+Theorem:
+Given a Factorization Set $\PP_{p_n}$,
+the smallest number,
+that has more than one prime factor $x \not\in \PP_{p_n}$,
+is $p_{n+1}^2$.
+
+Proof:
+Assuming there is a number $x \cdot y < p_{n+1}^2$,
+that has two prime factors $x, y \not\in \PP_{p_n}$.
+The smallest number having this prime factors is $x \cdot y$,
+since a number with additional factors $p \in \PP_{p_n}$ is larger:
+$x \cdot y \cdot p > x \cdot y$.
+The smallest number $x \cdot y$ is formed by the smallest primes larger than $p_n$,
+which are $x = p_{n+1}, y = p_{n+1}$.
+Therefore the smallest $x \cdot y = p_{n+1} \cdot p_{n+1} = p_{n+1}^2$,
+therefore every possible $x \cdot y \geq p_{n+1}^2$,
+which is in contradicton to the initial assuption.
+(None of the above statements is restricted by additional factors,
+since adding additional factors would render the numbers only greater.)
+
+\rightline{$\square$}
+
+
 \end{document}
