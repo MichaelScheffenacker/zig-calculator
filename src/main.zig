@@ -175,6 +175,40 @@ pub fn main() !void {
     print(" _____  ————————  —=====\n", .{});
     print("√12*45  √(12*45)  √12*45\n", .{});
     print("\n", .{});
+
+    const it = 128;
+    forx(it, 0, nn);
+    forx(it, 2, nx);
+    forx(it, 3, nx);
+    forx(it, 5, nx);
+    //forx(it, 7, nx);
+}
+
+fn forx(n: u64, m: u64, f: *const fn (m: u64, i: u64) void ) void {
+    for (0..n) |i| {
+        f(m, i);
+    }
+    print("\n", .{});
+}
+
+fn nn(m: u64, pi: u64) void {
+    _ = m;
+    var i: u64 = pi;
+    while (i >= 100) {
+        i /= 100;
+    }
+    if (i%10 == 0) {
+        print("{d}", .{i/10});
+    } else if (pi % 5 == 0) {
+        print("5", .{});
+    } else {
+        print(" ", .{});
+    }
+}
+
+fn nx(m: u64, i: u64) void {
+    const x: u8 = if (i%m == 0) 'x' else ' ';
+    print("{c}", .{x});
 }
 
 fn time(timer: *std.time.Timer) void {
