@@ -182,7 +182,12 @@ pub fn main() !void {
     forx(it, 3, nx);
     forx(it, 5, nx);
     //forx(it, 7, nx);
+
+    forx(it, 0, np);
+    nc();
 }
+
+var pr = [_]u2{0} ** 128;
 
 fn forx(n: u64, m: u64, f: *const fn (m: u64, i: u64) void ) void {
     for (0..n) |i| {
@@ -209,7 +214,29 @@ fn nn(m: u64, pi: u64) void {
 fn nx(m: u64, i: u64) void {
     const x: u8 = if (i%m == 0) 'x' else ' ';
     print("{c}", .{x});
+    if (i%m == 0) { pr[i] = 1; }
 }
+
+fn np(m: u64, i: u64) void {
+    _ = m;
+    const c: u8 = if (pr[i] == 1) '1' else ' ';
+    print("{c}", .{c});
+}
+
+fn nc() void {
+    var c: u64 = 0;
+    for (pr) |p| {
+        if (p == 1) {
+            print("{c}", .{' '});
+            c += 1;
+        } else {
+            print("{d}", .{c});
+            c = 0;
+        }
+    }
+    print("\n", .{});
+}
+    
 
 fn time(timer: *std.time.Timer) void {
     print("{}\n", .{timer.lap()});
