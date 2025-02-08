@@ -176,7 +176,7 @@ pub fn main() !void {
     print("√12*45  √(12*45)  √12*45\n", .{});
     print("\n", .{});
 
-    const it = 128;
+    
     forx(it, 0, nn);
     forx(it, 2, nx);
     forx(it, 3, nx);
@@ -187,7 +187,8 @@ pub fn main() !void {
     nc();
 }
 
-var pr = [_]u2{0} ** 128;
+const it = 64;
+var pr = [_]u2{0} ** it;
 
 fn forx(n: u64, m: u64, f: *const fn (m: u64, i: u64) void ) void {
     for (0..n) |i| {

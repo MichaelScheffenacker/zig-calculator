@@ -1,6 +1,7 @@
 \documentclass[a4paper,10pt]{article}
 \usepackage[utf8]{inputenc}
 \usepackage{amsfonts}
+\usepackage{amsmath}
 \usepackage{mathtools}
 \usepackage{soul}
 \usepackage[style=iso]{datetime2}
@@ -17,7 +18,8 @@
 
 % \end{abstract}
 
-% \section{}
+
+\section{Input Rendering}
 
 \begin{verbatim}
  $ 1 / 2
@@ -190,7 +192,9 @@ therefore the array's value can be used as boolean prime indicator.
 
 [apparently the smallest untouched multiple of a new prime is its square, might want to include that ...]
 
-More ideas:
+
+\subsection{Numerical Limits}
+
 \begin{itemize}
  \item Condensate eight Booleans into a byte; would reduce memory usage to an eighth. To evaluate the overhead of extracting the values would require testing.
  \begin{itemize}
@@ -304,6 +308,7 @@ But somehow (up to $p_n$?) all the numbers are met.
 There might lie the core of the proof?!]
 
 \marginpar{2025-01-24}
+
 
 \subsubsection*{Attempt of some basic definitions}
 
@@ -459,5 +464,93 @@ since adding additional factors would render the numbers only greater.)
 
 \rightline{$\square$}
 
+
+\marginpar{2025-02-09}
+
+
+\subsection{Sieve of Eratosthenes}
+
+A space saving way to implement the Sieve
+is to utilize every bit of every number in an array,
+since the index represents the numbers and the only information,
+that has to be stored in the value is a boolean if the number is prime.
+To improve the Sieve's time efficiency,
+it can be prefilled with the pattern formed by the first prime numbers.
+
+\begin{small}
+\begin{verbatim}
+       0    5    1    5    2    5    3    5    4    5    5    5    6
+2:     x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x
+3:     x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x
+5:     x    x    x    x    x    x    x    x    x    x    x    x    x
+sum:   1 11111 111 1 111 1 111 11111 1 11111 111 1 111 1 111 11111 1 11
+count: 1     5   3 1   3 1   3     5 1     5   3 1   3 1   3     5 1
+                                     ^                             ^
+                                     repeating pattern at 30 and 60
+\end{verbatim}
+\end{small}
+
+The first prime numbers remove a substantial amount of the Sieve:
+\begin{itemize}
+ \item 2: removes $\frac{1}{2}$
+ \item 3: removes an additional $\frac{1}{6}$
+ \item 5: removes another additional $\frac{1}{15}$
+\end{itemize}
+
+Which sum up to $\frac{11}{15}$ or about 73\%.
+
+On a 64 bit machine, choosing 64 bit integer might be advantageous.
+Since the the pattern of the first three primes repeats on every 30\textsuperscript{th} number,
+and 64 is not a multiple of 30,
+the pattern hast to shift through the array indices.
+The least common multiple is $960 = 64 \cdot 15 = 30 \cdot 32$;
+therefore the pattern repeats on every 15\textsuperscript{th} array entry.
+
+
+\begin{small}
+\begin{verbatim}
+
+101111101110101110101110111110 101111101110101110101110111110
+101111101110101110101110111110 101111101110101110101110111110
+101111101110101110101110111110 101111101110101110101110111110
+101111101110101110101110111110 101111101110101110101110111110
+101111101110101110101110111110 101111101110101110101110111110
+101111101110101110101110111110 101111101110101110101110111110
+101111101110101110101110111110 101111101110101110101110111110
+101111101110101110101110111110 101111101110101110101110111110
+101111101110101110101110111110 101111101110101110101110111110
+101111101110101110101110111110 101111101110101110101110111110
+101111101110101110101110111110 101111101110101110101110111110
+101111101110101110101110111110 101111101110101110101110111110
+101111101110101110101110111110 101111101110101110101110111110
+101111101110101110101110111110 101111101110101110101110111110
+101111101110101110101110111110 101111101110101110101110111110
+101111101110101110101110111110 101111101110101110101110111110 =
+
+1011111011101011101011101111101011111011101011101011101111101011
+1110111010111010111011111010111110111010111010111011111010111110
+1110101110101110111110101111101110101110101110111110101111101110
+1011101011101111101011111011101011101011101111101011111011101011
+1010111011111010111110111010111010111011111010111110111010111010
+1110111110101111101110101110101110111110101111101110101110101110
+1111101011111011101011101011101111101011111011101011101011101111
+1010111110111010111010111011111010111110111010111010111011111010
+1111101110101110101110111110101111101110101110101110111110101111
+1011101011101011101111101011111011101011101011101111101011111011
+1010111010111011111010111110111010111010111011111010111110111010
+1110101110111110101111101110101110101110111110101111101110101110
+1011101111101011111011101011101011101111101011111011101011101011
+1011111010111110111010111010111011111010111110111010111010111011
+1110101111101110101110101110111110101111101110101110101110111110
+
+\end{verbatim}
+\end{small}
+
+\begin{footnotesize}
+\begin{flalign*}
+1011111011101011101011101111101011111011101011101011101111101011_2 &= 13757281879720901611_{10}\\
+1110111010111010111011111010111110111010111010111011111010111110_2 &= 17202325264729358014_{10}\\
+\end{flalign*}
+\end{footnotesize}
 
 \end{document}
