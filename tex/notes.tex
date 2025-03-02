@@ -544,4 +544,47 @@ Each of those 16-digit hexadecimal patterns represents a 64-bit number.
 \end{flalign*}
 \end{footnotesize}
 
+\marginpar{2025-03-02}
+
+Another idea is to reduce the array by leaving out all the numbers
+that cannot be primes according to the former scheme.
+
+\begin{small}
+\begin{verbatim}
+          1         2         3         4         5         6
+0123456789012345678901234567890123456789012345678901234567890
+101111101110101110101110111110101111101110101110101110111110
+ 0     0   0 0   0 0   0     0 0     0   0 0   0 0   0     0
+ 1     7   1113  1719  23    2931    37  4143  4749  53    59
+
+1  7  11 13 17 19 23 29 31 37 41 43 47 49 53 59
+A     AA                A     AA                  (0 2) ( 1 11)
+   B        BB             B        BB            (1 4) ( 7 17)
+         C        CC             C        CC      (3 6) (13 23)
+               D     DD                D     DD   (5 7) (19 29)
+0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15
+
+0  1    1 0
+1  7    7 1
+2 11   11 2
+3 13   13 3
+4 17   17 4
+5 19   19 5
+6 23   23 6
+7 29   29 7
+\end{verbatim}
+\end{small}
+
+One (potentially small) advantage of this concept would be,
+that (for the 2, 3, 5 scheme) the repeating pattern of 30 numbers
+results in 8 potential prime numbers and therefore would fit into a byte.
+
+If $C$ is the set of all candidates of the 235 scheme,
+a contraction function $c(x): \NN \rightarrow C$
+and a expansion function $c(x): C \rightarrow \NN$ would be required.
+It can be expected that the lower memory requirement would speed up the
+execution of the Sieve.
+At this point it is unclear if the application of those functions
+would negate the speed gain from the lower memory requirement.
+
 \end{document}
