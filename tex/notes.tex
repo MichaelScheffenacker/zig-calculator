@@ -564,6 +564,7 @@ A     AA                A     AA                  (0 2) ( 1 11)
                D     DD                D     DD   (5 7) (19 29)
 0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15
 
+exp    cont
 0  1    1 0
 1  7    7 1
 2 11   11 2
@@ -576,15 +577,60 @@ A     AA                A     AA                  (0 2) ( 1 11)
 \end{small}
 
 One (potentially small) advantage of this concept would be,
-that (for the 2, 3, 5 scheme) the repeating pattern of 30 numbers
+that (for the 2,3,5-scheme) the repeating pattern of 30 numbers
 results in 8 potential prime numbers and therefore would fit into a byte.
 
-If $C$ is the set of all candidates of the 235 scheme,
-a contraction function $c(x): \NN \rightarrow C$
-and a expansion function $c(x): C \rightarrow \NN$ would be required.
+The concrete period of 30 is from now on generalized to $T$;
+the scheme to $S_x$ with the 2,3,5-scheme being $S_5$.
+$[x] \coloneq \set{0,1,\dots,x}$.
+
+If $C_5$ is the set of all candidates of the 2,3,5-scheme,
+a contraction function $c_5(x): C_5 \rightarrow \NN$
+and a expansion function $e_5(x): \NN \rightarrow C_5$ would be required.
 It can be expected that the lower memory requirement would speed up the
 execution of the Sieve.
 At this point it is unclear if the application of those functions
 would negate the speed gain from the lower memory requirement.
+
+The contraction function is mainly required for the application of the Sieve,
+eliminating candidates as multiples of prime numbers.
+To concretize this, the candidate set $C_s^T$ of a scheme $s$ is limited to a period $T$;
+the corresponding set of natural numbers is then $[|C_s^T|]$.
+$$c_s^T(x): C_s^T \longrightarrow [|C_s^T|]$$
+$$e_s^T(x): [|C_s^T|] \longrightarrow C_s^T$$
+
+\begin{flalign*}
+c_5^{30}(x): C_5^{30} &\longrightarrow [7]    \\
+        1 &\longmapsto 0\\
+        7 &\longmapsto 1\\
+          &\cdots\\
+        29 &\longmapsto 7
+\end{flalign*}
+
+\begin{flalign*}
+e_5^{30}(x): [7] &\longrightarrow C_5^{30}\\
+        0 &\longmapsto 1\\
+        1 &\longmapsto 7\\
+          &\cdots\\
+        7 &\longmapsto 29
+\end{flalign*}
+
+The algorithm might have the following main steps,
+given a scheme $s$ and a period $T$ starting with the number $x$.
+All bits of the array are initialized with ones as potential candidates;
+candidates are eliminated by marking them with zero:
+
+\begin{itemize}
+ \item Splitting $x$ into a offset $o = (x\mod T)$ and a base $b = x - o$
+ \item If $o \not \in C_s^T$ stop the algorithm; $x$ is not prime
+ \item Generate a bit mask by calculating $2^{c(o)}$
+ \item If $x$ is smaller than $T$ repeat the former step accordingly and
+ reduce the result with bitwise OR operations
+ \item Negate the bit mask to allow elimination
+ \item \st{Loop, with $i \geq 2$ as the iterator, over every $ib$\textsuperscript{th} element of the array}
+ \item \st{Apply the negated bit mask by utilizing bitwise ADD to the array element}
+\end{itemize}
+[The splitting cannot be done beforehand, since the numbers are not multiples of $T$.]
+
 
 \end{document}
