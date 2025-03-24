@@ -263,6 +263,7 @@ the former candidate for the upper limit of the prime factorization with factors
 
 \newcommand{\PP}{\mathbb{P}}
 \newcommand{\NN}{\mathbb{N}}
+\newcommand{\ZZ}{\mathbb{Z}}
 \newcommand{\TT}{\mathbb{T}}
 \newcommand{\Bm}[1]{B^-_{32}}
 \newcommand{\Bp}[1]{B^+_{32}}
@@ -640,7 +641,7 @@ called Euclidean Algorithm.
 The Euclidean Algorithm—and it's less efficient companion called Euclid's Algorithm—require
 no prime numbers.
 Hence the prime number investigation will stop for now.
-For $a, b \in \NN$ it is:
+For $a, b \in \ZZ$ it is:
 
 \begin{flalign*}
  gcd(a, b) = \left\{
@@ -651,11 +652,11 @@ For $a, b \in \NN$ it is:
  \right.
 \end{flalign*}
 
-Note that for $a > b \Rightarrow a > b > \bmod(a, b)$ and
-for $a < b \Rightarrow \bmod(a, b) = a$ (which switches $a$ and $b$) and therefore
+Note that with $a, b > 2$ for $a > b \implies a > b > \bmod(a, b)$ and
+for $a < b \implies {\bmod(a, b) = a}$ (which switches $a$ and $b$) and therefore
 the first relation holds for every consecutive function call.
 Edge cases are: $gcd(a, 0) = a$, $gcd(0, b) = b$ and $gcd(0, 0) = 0$
-which is acceptable, since in praxi $0/0$ means 0 for most cases.
+which requires special care.
 
 
 \end{document}
