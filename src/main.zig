@@ -20,7 +20,7 @@ pub fn main() !void {
 
     time(&timer);
 
-    try parser.showcases();
+    parser.showcases();
     
     //const inputResult = stdin.readUntilDelimiterOrEof(inputBuffer[0..], '\n') catch null;
     //if (inputResult) |input| {

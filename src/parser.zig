@@ -151,22 +151,23 @@ fn isSignSymbol(symbol: u8) bool {
 pub fn calculateResult() Summand {
     var sum = Frac{ .num = 0, .den = 1 };
     for (summands) |summand| {
-        var defaultFactors = [_]u64{ 1, 1 }; // of course this error handling is dysfunctional
-        const sumFactors = primes.factorize(sum.den) catch defaultFactors[0..];
-        const summandFactors = primes.factorize(summand.normal().den) catch defaultFactors[0..];
-        const lcm: Lcm = primes.calcLcm(sumFactors, summandFactors);
-        const normSum = normalize(sum, lcm.fac1);
-        const normSummand = normalize(summand.normal(), lcm.fac2);
-        sum = add(normSum, normSummand);
+        sum = add(sum, summand.normal());
     }
-    const reducedSum = primes.reduceFrac(sum);
     var num = numBuff[numStart .. numStart + 1];
     var den = denBuff[denStart .. denStart + 1];
-    num[0] = reducedSum.num;
-    den[0] = reducedSum.den;
+    num[0] = sum.num;
+    den[0] = sum.den;
     numStart += 1;
     denStart += 1;
     return if (den[0] == 1) Summand{ .prod = num } else Summand{ .frac = PFrac{ .num = num, .den = den } };
+}
+
+fn add(a: Frac, b: Frac) Frac {
+    //todo: add overflow check
+    return primes.reduceFrac(Frac{
+        .num = a.num * b.den + b.num * a.den,
+        .den = a.den * b.den
+    });
 }
 
 pub fn printCalculation(sum: Summand) void {
@@ -197,27 +198,10 @@ pub fn printCalculation(sum: Summand) void {
     print("\n", .{});
 }
 
-fn add(a: Frac, b: Frac) Frac {
-    const c = Frac{ .num = a.num + b.num, .den = a.den };
-    return c;
-}
-
-fn normalize(a: Frac, pLcmFac: u64) Frac {
-    const lcmFac: u63 = @intCast(pLcmFac);  //todo: cleanup
-    return Frac{ .num = a.num * lcmFac, .den = a.den * lcmFac };
-}
-
-pub fn showcases() !void {
+pub fn showcases() void {
     const a = Frac{ .num = 5, .den = 8 };
     const b = Frac{ .num = 3, .den = 12 };
-    const factorsA = try primes.factorize(a.den);
-    const factorsB = try primes.factorize(b.den);
-    const lcm:Lcm = primes.calcLcm(factorsA, factorsB);
-    const aNorm = normalize(a, lcm.fac1);
-    const bNorm = normalize(b, lcm.fac2);
-
-    const c = add(aNorm, bNorm);
-    const cReduced = primes.reduceFrac(c);
+    const c = add(a, b);
 
     print("\n", .{});
 
@@ -225,14 +209,7 @@ pub fn showcases() !void {
     print(" + ", .{});
     types.printFrac(b);
     print(" = ", .{});
-    types.printFrac(aNorm);
-    print(" + ", .{});
-    types.printFrac(bNorm);
-    print(" = ", .{});
-
     types.printFrac(c);
-    print(" = ", .{});
-    types.printFrac(cReduced);
 
     print("\n", .{});
 }

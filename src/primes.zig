@@ -74,35 +74,21 @@ pub fn factorize(number: i64) ![]u64 {
     return PrimeFacErr.miss;
 }
 
-pub fn calcLcm(factors1: []u64, factors2: []u64) Lcm {
-    var lcm: Lcm = .{ .fac1 = 1, .fac2 = 1 };
-    var index1: u64 = 0;
-    var index2: u64 = 0;
-    while (true) {
-        const val1: u64 = if (index1 < factors1.len) factors1[index1] else maxInt;
-        const val2: u64 = if (index2 < factors2.len) factors2[index2] else maxInt;
-
-        if (val1 == maxInt and val2 == maxInt) {
-            return lcm;
-        }
-
-        if (val1 == val2) {
-            index1 += 1;
-            index2 += 1;
-        } else if (val1 < val2) {
-            lcm.fac2 *= val1;
-            index1 += 1;
-        } else {
-            lcm.fac1 *= val2;
-            index2 += 1;
-        }
-    }
+pub fn calcLcm(a: i64, b: i64) Lcm {
+    const absA: i64 = @intCast(@abs(a));
+    const absB: i64 = @intCast(@abs(b));
+    // absA * absB could overflow
+    // dividing first could reduce the risk
+    // at this point the order of execution is unclear in Zig
+    // unclear if the parenthesis forces a the order of execution
+    // todo: add overflow check
+    return absA * (absB / calcGcd(a, b));
 }
 
 pub fn calcGcd(a: i64, b: i64) i64 {
     if (b == 0) { return a; }
-    const absA = @as(i64, @intCast(@abs(a)));
-    const absB = @as(i64, @intCast(@abs(b)));
+    const absA: i64 = @intCast(@abs(a));
+    const absB: i64 = @intCast(@abs(b));
     return calcGcd(absB, @rem(absA, absB));
 }
 
@@ -161,4 +147,9 @@ test "reduceFrac test" {
     
     frac = reduceFrac(Frac{ .num = -8, .den = -6});
     try expect(frac.num == 4 and frac.den == 3);
+}
+
+test "log2" {
+    const b: i64 = 0b110011;
+    try expect(64 - @clz(b) == 6);
 }
