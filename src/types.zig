@@ -79,8 +79,14 @@ pub const Summand = union(enum) {
     }
     pub fn normal(this: Summand) Frac {
         switch (this) {
-            .prod => |prod| return Frac{ .num = multiplyFactors(prod), .den = 1 },
-            .frac => |frac| return pFracToNormalizedFrac(frac),
+            .prod => |prod| return Frac{
+                .num = multiplyFactors(prod),
+                .den = 1
+            },
+            .frac => |frac| return Frac{
+                .num = multiplyFactors(frac.num),
+                .den = multiplyFactors(frac.den)
+            },
         }
     }
 };
@@ -139,21 +145,6 @@ fn printSeparatedSlice(slice: []i64, comptime separator: []const u8) void {
     }
 }
 
-fn pFracToNormalizedFrac(frac: PFrac) Frac {
-    const reducedFrac = Frac{
-        .num = multiplyFactors(frac.num),
-        .den = multiplyFactors(frac.den),
-    };
-    const signedFrac = if (reducedFrac.den < 0)
-        Frac{
-            .num = -1 * reducedFrac.num,
-            .den = -1 * reducedFrac.den,
-        }
-    else
-        reducedFrac;
-    return primes.reduceFrac(signedFrac);
-}
-
 fn multiplyFactors(factors: []i64) i64 {
     var product: i64 = 1;
     for (factors) |factor| {
@@ -174,3 +165,4 @@ test "AppendableSlice test" {
     try expect(slice.slice[0] == 2);
     try expect(slice.slice[1] == 3);
 }
+
