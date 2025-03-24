@@ -6,6 +6,10 @@ const zigTime = std.time;
 const parser = @import("parser.zig");
 const primes = @import("primes.zig");
 
+comptime {
+    _ = @import("primes.zig");
+}
+
 var inputBuffer: [128]u8 = undefined;
 
 

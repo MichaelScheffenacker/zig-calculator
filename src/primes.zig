@@ -99,35 +99,21 @@ pub fn calcLcm(factors1: []u64, factors2: []u64) Lcm {
     }
 }
 
-pub fn calcGcd(factors1: []u64, factors2: []u64) u64 {
-    var gcd: u64 = 1;
-    var index1: u64 = 0;
-    var index2: u64 = 0;
-    while (true) {
-        const val1: u64 = if (index1 < factors1.len) factors1[index1] else maxInt;
-        const val2: u64 = if (index2 < factors2.len) factors2[index2] else maxInt;
-
-        if (val1 == maxInt and val2 == maxInt) {
-            return gcd;
-        }
-
-        if (val1 == val2) {
-            index1 += 1;
-            index2 += 1;
-            gcd *= val1;
-        } else if (val1 < val2) {
-            index1 += 1;
-        } else {
-            index2 += 1;
-        }
-    }
+pub fn calcGcd(a: i64, b: i64) i64 {
+    if (b == 0) { return a; }
+    const absA = @as(i64, @intCast(@abs(a)));
+    const absB = @as(i64, @intCast(@abs(b)));
+    return calcGcd(absB, @rem(absA, absB));
 }
 
-pub fn reduceFrac(a: Frac) !Frac {
-    const factorsNum = try factorize(a.num);
-    const factorsDen = try factorize(a.den);
-    const gcd: u63 = @intCast(calcGcd(factorsNum, factorsDen));
-    return Frac{ .num = @divTrunc(a.num, gcd), .den = @divTrunc(a.den, gcd) };
+pub fn reduceFrac(a: Frac) Frac {
+    if (a.den == 0) { return a; }
+    const sign: i2 = if (a.den < 0) -1 else 1;
+    const gcd: i64 = calcGcd(a.num, a.den);
+    return Frac{
+        .num = sign * @divExact(a.num, gcd),
+        .den = sign * @divExact(a.den, gcd)
+    };
 }
 
 
@@ -139,4 +125,40 @@ test "prime array test" {
     try expect(primes[1021] == 8123);
     try expect(primes[1022] == 8147);
     try expect(primes[1023] == 8161);
+}
+
+test "gdc test" {
+    try expect(calcGcd(12,  6) ==  6);
+    try expect(calcGcd( 6, 12) ==  6);
+    try expect(calcGcd( 6,  6) ==  6);
+    try expect(calcGcd( 8,  6) ==  2);
+    try expect(calcGcd( 0,  4) ==  4);
+    try expect(calcGcd( 4,  0) ==  4);
+    try expect(calcGcd( 0,  0) ==  0);
+    try expect(calcGcd(-8,  6) ==  2);
+    try expect(calcGcd( 8, -6) ==  2);
+    try expect(calcGcd(-8, -6) ==  2);
+    try expect(calcGcd(456748351263, 789465123468) == 261);
+}
+
+test "reduceFrac test" {
+    var frac: Frac = undefined;
+
+    frac =reduceFrac(Frac{ .num = 12, .den = 6});
+    try expect(frac.num == 2 and frac.den == 1);
+    
+    frac = reduceFrac(Frac{ .num = 6, .den = 12});
+    try expect(frac.num == 1 and frac.den == 2);
+    
+    frac = reduceFrac(Frac{ .num = 6, .den = 6});
+    try expect(frac.num == 1 and frac.den == 1);
+    
+    frac = reduceFrac(Frac{ .num = -8, .den = 6});
+    try expect(frac.num == -4 and frac.den == 3);
+    
+    frac = reduceFrac(Frac{ .num = 8, .den = -6});
+    try expect(frac.num == -4 and frac.den == 3);
+    
+    frac = reduceFrac(Frac{ .num = -8, .den = -6});
+    try expect(frac.num == 4 and frac.den == 3);
 }

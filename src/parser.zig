@@ -159,7 +159,7 @@ pub fn calculateResult() Summand {
         const normSummand = normalize(summand.normal(), lcm.fac2);
         sum = add(normSum, normSummand);
     }
-    const reducedSum = primes.reduceFrac(sum) catch sum;
+    const reducedSum = primes.reduceFrac(sum);
     var num = numBuff[numStart .. numStart + 1];
     var den = denBuff[denStart .. denStart + 1];
     num[0] = reducedSum.num;
@@ -217,7 +217,7 @@ pub fn showcases() !void {
     const bNorm = normalize(b, lcm.fac2);
 
     const c = add(aNorm, bNorm);
-    const cReduced = try primes.reduceFrac(c);
+    const cReduced = primes.reduceFrac(c);
 
     print("\n", .{});
 

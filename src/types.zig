@@ -151,7 +151,7 @@ fn pFracToNormalizedFrac(frac: PFrac) Frac {
         }
     else
         reducedFrac;
-    return primes.reduceFrac(signedFrac) catch signedFrac;
+    return primes.reduceFrac(signedFrac);
 }
 
 fn multiplyFactors(factors: []i64) i64 {
