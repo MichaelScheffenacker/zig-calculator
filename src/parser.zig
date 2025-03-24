@@ -6,9 +6,8 @@ const Frac = types.Frac;
 const PFrac = types.PFrac;
 const Expression = types.Expression;
 const Summand = types.Summand;
-const Lcm = types.Lcm;
 
-const primes = @import("primes.zig");
+const fractions = @import("fractions.zig");
 
 const Symbols = types.AppendableSlice(Expression);
 var symbolsBuffer: [1024]Expression = undefined;
@@ -151,7 +150,7 @@ fn isSignSymbol(symbol: u8) bool {
 pub fn calculateResult() Summand {
     var sum = Frac{ .num = 0, .den = 1 };
     for (summands) |summand| {
-        sum = add(sum, summand.normal());
+        sum = fractions.add(sum, summand.normal());
     }
     var num = numBuff[numStart .. numStart + 1];
     var den = denBuff[denStart .. denStart + 1];
@@ -160,14 +159,6 @@ pub fn calculateResult() Summand {
     numStart += 1;
     denStart += 1;
     return if (den[0] == 1) Summand{ .prod = num } else Summand{ .frac = PFrac{ .num = num, .den = den } };
-}
-
-fn add(a: Frac, b: Frac) Frac {
-    //todo: add overflow check
-    return primes.reduceFrac(Frac{
-        .num = a.num * b.den + b.num * a.den,
-        .den = a.den * b.den
-    });
 }
 
 pub fn printCalculation(sum: Summand) void {
@@ -201,7 +192,7 @@ pub fn printCalculation(sum: Summand) void {
 pub fn showcases() void {
     const a = Frac{ .num = 5, .den = 8 };
     const b = Frac{ .num = 3, .den = 12 };
-    const c = add(a, b);
+    const c = fractions.add(a, b);
 
     print("\n", .{});
 
