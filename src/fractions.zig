@@ -5,8 +5,6 @@ const expect = std.testing.expect;
 const types = @import("types.zig");
 const Frac = types.Frac;
 
-
-
 fn lcm(a: i64, b: i64) i64 {
     const absA: i64 = @intCast(@abs(a));
     const absB: i64 = @intCast(@abs(b));
@@ -25,7 +23,7 @@ fn gcd(a: i64, b: i64) i64 {
     return gcd(absB, @rem(absA, absB));
 }
 
-fn reduce(a: Frac) Frac {
+pub fn reduce(a: Frac) Frac {
     if (a.den == 0) { return a; }
     const sign: i2 = if (a.den < 0) -1 else 1;
     const lgcd: i64 = gcd(a.num, a.den);

@@ -3,17 +3,18 @@ const print = std.debug.print;
 
 const types = @import("types.zig");
 const Frac = types.Frac;
-const PFrac = types.PFrac;
+const FracOfProducts = types.FracOfProducts;
 const Expression = types.Expression;
-const Summand = types.Summand;
 
 const fractions = @import("fractions.zig");
 
 const Symbols = types.AppendableSlice(Expression);
 var symbolsBuffer: [1024]Expression = undefined;
 var symbols: Symbols = undefined;
-var summandsBuffer: [64]Summand = undefined;
-var summands: []Summand = summandsBuffer[0..0];
+
+const Summands = types.AppendableSlice(FracOfProducts);
+var summandsBuffer: [64]FracOfProducts = undefined;
+var summands: Summands = undefined;
 
 const ParseError = error{ missingOperand, redundantOperator };
 
@@ -25,7 +26,7 @@ var denStart: u64 = 0;
 
 pub fn init() void {
     symbols = Symbols.init(&symbolsBuffer);
-    summands = summandsBuffer[0..0];
+    summands = Summands.init(&summandsBuffer);
 }
 
 pub fn printSymbols() void {
@@ -76,7 +77,7 @@ pub fn parseSummands() void {
     var operator: u8 = 0;
     var factor = symbols.slice[0].int;
     var i: u64 = 1;
-    var summand = PFrac{ .num = numBuff[0..1], .den = denBuff[0..0] };
+    var summand = FracOfProducts{ .num = numBuff[0..1], .den = denBuff[0..0] };
     summand.num[0] = factor;
     numStart = 1;
     denStart = 0;
@@ -87,7 +88,7 @@ pub fn parseSummands() void {
 
         if (operator == '+' or operator == '-') {
             appendSummand(summand);
-            summand = PFrac{ .num = numBuff[numStart .. numStart + 1], .den = denBuff[denStart..denStart] };
+            summand = FracOfProducts{ .num = numBuff[numStart .. numStart + 1], .den = denBuff[denStart..denStart] };
             if (operator == '-') {
                 factor *= -1;
             }
@@ -108,14 +109,8 @@ pub fn parseSummands() void {
     appendSummand(summand);
 }
 
-pub fn appendSummand(summand: PFrac) void {
-    const pos = summands.len;
-    summands.len += 1;
-    if (summand.den.len == 0) {
-        summands[pos] = Summand{ .prod = summand.num };
-    } else {
-        summands[pos] = Summand{ .frac = summand };
-    }
+pub fn appendSummand(summand: FracOfProducts) void {
+    summands = summands.append(summand);
     numStart += summand.num.len;
     denStart += summand.den.len;
 }
@@ -147,10 +142,10 @@ fn isSignSymbol(symbol: u8) bool {
 }
 
 
-pub fn calculateResult() Summand {
+pub fn calculateResult() FracOfProducts {
     var sum = Frac{ .num = 0, .den = 1 };
-    for (summands) |summand| {
-        sum = fractions.add(sum, summand.normal());
+    for (summands.slice) |summand| {
+        sum = fractions.add(sum, summand.toFrac());
     }
     var num = numBuff[numStart .. numStart + 1];
     var den = denBuff[denStart .. denStart + 1];
@@ -158,30 +153,30 @@ pub fn calculateResult() Summand {
     den[0] = sum.den;
     numStart += 1;
     denStart += 1;
-    return if (den[0] == 1) Summand{ .prod = num } else Summand{ .frac = PFrac{ .num = num, .den = den } };
+    return FracOfProducts{ .num = num, .den = den };
 }
 
-pub fn printCalculation(sum: Summand) void {
+pub fn printCalculation(sum: FracOfProducts) void {
     print("\n", .{});
-    for (summands, 0..) |summand, i| {
+    for (summands.slice, 0..) |summand, i| {
         summand.printTop();
-        if (i < summands.len - 1) print("   ", .{});
+        if (i < summands.slice.len - 1) print("   ", .{});
     }
     print("   ", .{});
     sum.printTop();
 
     print("\n", .{});
-    for (summands, 0..) |summand, i| {
+    for (summands.slice, 0..) |summand, i| {
         summand.printMid();
-        if (i < summands.len - 1) print(" + ", .{});
+        if (i < summands.slice.len - 1) print(" + ", .{});
     }
     print(" = ", .{});
     sum.printMid();
 
     print("\n", .{});
-    for (summands, 0..) |summand, i| {
+    for (summands.slice, 0..) |summand, i| {
         summand.printBot();
-        if (i < summands.len - 1) print("   ", .{});
+        if (i < summands.slice.len - 1) print("   ", .{});
     }
     print("   ", .{});
     sum.printBot();

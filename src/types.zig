@@ -2,11 +2,11 @@ const std = @import("std");
 const print = std.debug.print;
 const expect = std.testing.expect;
 
-const primes = @import("primes.zig");
+const fractions = @import("fractions.zig");
 
 pub const Frac = struct { num: i64, den: i64 };
-pub const PFrac = struct { num: []i64, den: []i64 };
-pub const Lcm = struct { fac1: u64, fac2: u64 };
+
+const Factors = AppendableSlice(i64);
 
 pub fn AppendableSlice(comptime T: type) type { // to create a generic (struct) a function returning generic Type is required ...
     return struct { // ... this leads to utilization of an anonymous struct ...
@@ -54,56 +54,50 @@ pub const Expression = union(enum) {
     }
 };
 
-pub const Summand = union(enum) {
-    prod: []i64,
-    frac: PFrac,
-    pub fn printTop(this: Summand) void {
-        switch (this) {
-            .prod => |prod| for (0..calcSliceWidth(prod)) |_| {
-                print(" ", .{});
-            },
-            .frac => |frac| printFracNum(frac),
-        }
+pub const FracOfProducts= struct {
+    num: []i64,
+    den: []i64,
+    pub fn printTop(this: FracOfProducts) void {
+        const numWidth = calcSliceWidth(this.num);
+        if (isOnlyProduct(this)) { printRepeat(numWidth, " "); } else { printFracNum(this); }
     }
-    pub fn printMid(this: Summand) void {
-        switch (this) {
-            .prod => |prod| printSeparatedSlice(prod, "·"),
-            .frac => |frac| for (0..calcFracWidth(frac)) |_| print("—", .{}),
-        }
+    pub fn printMid(this: FracOfProducts) void {
+        const fracWidth = calcFracWidth(this);
+        if (isOnlyProduct(this)) { printSeparatedSlice(this.num, "·"); } else { printRepeat(fracWidth, "—"); }
     }
-    pub fn printBot(this: Summand) void {
-        switch (this) {
-            .prod => |prod| for (0..calcSliceWidth(prod)) |_| print(" ", .{}),
-            .frac => |frac| printFracDen(frac),
-        }
+    pub fn printBot(this: FracOfProducts) void {
+        const numWidth = calcSliceWidth(this.num);
+        if (isOnlyProduct(this)) { printRepeat(numWidth, " "); } else { printFracDen(this); }
     }
-    pub fn normal(this: Summand) Frac {
-        switch (this) {
-            .prod => |prod| return Frac{
-                .num = multiplyFactors(prod),
-                .den = 1
-            },
-            .frac => |frac| return Frac{
-                .num = multiplyFactors(frac.num),
-                .den = multiplyFactors(frac.den)
-            },
-        }
+    pub fn toFrac(this: FracOfProducts) Frac {
+        const frac = Frac{
+            .num = multiplyFactors(this.num),
+            .den = if (isOnlyProduct(this)) 1 else multiplyFactors(this.den)
+        };
+        return fractions.reduce(frac);
+    }
+    fn isOnlyProduct(this: FracOfProducts) bool {
+        return this.den.len == 0;
     }
 };
+
+fn printRepeat(n: u64, comptime str: []const u8) void {
+    for (0..n) |_| print(str, .{});
+}
 
 pub fn printFrac(a: Frac) void {
     std.debug.print("{}/{}", .{ a.num, a.den });
 }
 
-fn printFracNum(frac: PFrac) void {
+fn printFracNum(frac: FracOfProducts) void {
     printFracElement(frac, frac.num);
 }
 
-fn printFracDen(frac: PFrac) void {
+fn printFracDen(frac: FracOfProducts) void {
     printFracElement(frac, frac.den);
 }
 
-fn printFracElement(frac: PFrac, element: []i64) void {
+fn printFracElement(frac: FracOfProducts, element: []i64) void {
     const elementWidth = calcSliceWidth(element);
     const width = calcFracWidth(frac);
     const preWidth = (width - elementWidth) / 2;
@@ -117,13 +111,14 @@ fn printFracElement(frac: PFrac, element: []i64) void {
     }
 }
 
-fn calcFracWidth(x: PFrac) u64 {
+fn calcFracWidth(x: FracOfProducts) u64 {
     const numWidth = calcSliceWidth(x.num);
     const denWidth = calcSliceWidth(x.den);
     return max(numWidth, denWidth);
 }
 
 fn calcSliceWidth(factors: []i64) u64 {
+    if (factors.len == 0) return 0;
     var w = factors.len - 1; // space for multiplication signs
     for (factors) |factor| {
         var x = factor;
@@ -146,6 +141,7 @@ fn printSeparatedSlice(slice: []i64, comptime separator: []const u8) void {
 }
 
 fn multiplyFactors(factors: []i64) i64 {
+    //todo: add overflow check
     var product: i64 = 1;
     for (factors) |factor| {
         product *= factor;
