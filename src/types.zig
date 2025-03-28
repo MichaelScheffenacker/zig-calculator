@@ -54,34 +54,65 @@ pub const Expression = union(enum) {
     }
 };
 
-pub const FracOfProducts = struct {
-    const This = @This();
+//var summandsBuffer: [64]FracOfProducts = undefined;
+//AppendableSlice(FracOfProducts);
+pub const Summands = struct {
+    slice: []FracOfProducts,
+    pub fn append(this: Summands, summand: FracOfProducts) struct {Summands, FracOfProducts} {
+        var slice = this.slice;
+        const pos = slice.len;
+        slice.len += 1;
+        slice[pos] = summand;
+        return .{
+            Summands{ .slice = slice },
+            summand.shiftFactors()
+        };
+    }
+};
 
+pub const FracOfProducts = struct {
+    var numBuff: [64]i64 = undefined;
+    var denBuff: [64]i64 = undefined;
+    var numStart: u64 = 0;
+    var denStart: u64 = 0;
     num: Factors,
     den: Factors,
-    pub fn init(numBuff: []i64, denBuff: []i64) This {
-        return This{
-            .num = Factors.init(numBuff),
-            .den = Factors.init(denBuff)
-        };
+    pub fn init() FracOfProducts {
+        return FracOfProducts{ .num = Factors.init(&numBuff), .den = Factors.init(&denBuff) };
+    }
+    pub fn shiftFactors(this: FracOfProducts) FracOfProducts {
+        numStart += this.num.slice.len;
+        denStart += this.den.slice.len;
+        return FracOfProducts{ 
+            .num = Factors{ .slice = numBuff[numStart..numStart] },
+            .den = Factors{ .slice = denBuff[denStart..denStart] }};
     }
     pub fn printTop(this: FracOfProducts) void {
         const numWidth = calcSliceWidth(this.num.slice);
-        if (isOnlyProduct(this)) { printRepeat(numWidth, " "); } else { printFracNum(this); }
+        if (isOnlyProduct(this)) {
+            printRepeat(numWidth, " ");
+        } else {
+            printFracNum(this);
+        }
     }
     pub fn printMid(this: FracOfProducts) void {
         const fracWidth = calcFracWidth(this);
-        if (isOnlyProduct(this)) { printSeparatedSlice(this.num.slice, "·"); } else { printRepeat(fracWidth, "—"); }
+        if (isOnlyProduct(this)) {
+            printSeparatedSlice(this.num.slice, "·");
+        } else {
+            printRepeat(fracWidth, "—");
+        }
     }
     pub fn printBot(this: FracOfProducts) void {
         const numWidth = calcSliceWidth(this.num.slice);
-        if (isOnlyProduct(this)) { printRepeat(numWidth, " "); } else { printFracDen(this); }
+        if (isOnlyProduct(this)) {
+            printRepeat(numWidth, " ");
+        } else {
+            printFracDen(this);
+        }
     }
     pub fn toFrac(this: FracOfProducts) Frac {
-        const frac = Frac{
-            .num = multiplyFactors(this.num.slice),
-            .den = if (isOnlyProduct(this)) 1 else multiplyFactors(this.den.slice)
-        };
+        const frac = Frac{ .num = multiplyFactors(this.num.slice), .den = if (isOnlyProduct(this)) 1 else multiplyFactors(this.den.slice) };
         return fractions.reduce(frac);
     }
     fn isOnlyProduct(this: FracOfProducts) bool {
@@ -169,4 +200,3 @@ test "AppendableSlice test" {
     try expect(slice.slice[0] == 2);
     try expect(slice.slice[1] == 3);
 }
-

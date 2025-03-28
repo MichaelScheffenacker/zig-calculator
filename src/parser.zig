@@ -12,26 +12,19 @@ const Symbols = types.AppendableSlice(Expression);
 var symbolsBuffer: [1024]Expression = undefined;
 var symbols: Symbols = undefined;
 
-const Summands = types.AppendableSlice(FracOfProducts);
-var summandsBuffer: [64]FracOfProducts = undefined;
-var summands: Summands = undefined;
-
 const ParseError = error{ missingOperand, redundantOperator };
 
-var numBuff: [64]i64 = undefined;
-var denBuff: [64]i64 = undefined;
-var numStart: u64 = 0;
-var denStart: u64 = 0;
+var summandsBuffer: [64]FracOfProducts = undefined;
+var summands: types.Summands = undefined;
 
 pub fn init() void {
     symbols = Symbols.init(&symbolsBuffer);
-    summands = Summands.init(&summandsBuffer);
+    summands = types.Summands{ .slice = summandsBuffer[0..0] };
 }
 
 pub fn printSymbols() void {
     symbols.printSlice();
 }
-
 pub fn parse(string: []const u8) !void {
     var runIndex: u64 = 0;
     var isOperatorPosition = false;
@@ -76,23 +69,19 @@ pub fn parseSummands() void {
     var operator: u8 = 0;
     var factor = symbols.slice[0].int;
     var i: u64 = 1;
-    var summand = FracOfProducts.init(&numBuff, &denBuff);
+    var summand = FracOfProducts.init();
     summand.num = summand.num.append(factor);
-    numStart = 1; ////
-    denStart = 0;
 
     while (i < symbols.slice.len) {
         operator = symbols.slice[i].op;
         factor = symbols.slice[i + 1].int;
 
         if (operator == '+' or operator == '-') {
-            appendSummand(summand);
-            summand.num.slice = numBuff[numStart .. numStart + 1];
-            summand.den.slice = denBuff[denStart..denStart];
+            summands, summand = summands.append(summand);
             if (operator == '-') {
                 factor *= -1;
             }
-            summand.num.slice[0] = factor;
+            summand.num = summand.num.append(factor);
         } else {
             if (operator == '*') {
                 summand.num = summand.num.append(factor);
@@ -102,14 +91,14 @@ pub fn parseSummands() void {
         }
         i += 2;
     }
-    appendSummand(summand);
+    summands, summand = summands.append(summand);
 }
 
-pub fn appendSummand(summand: FracOfProducts) void {
-    summands = summands.append(summand);
-    numStart += summand.num.slice.len;
-    denStart += summand.den.slice.len;
-}
+// pub fn appendSummand(summand: FracOfProducts) void {
+//     summands = summands.append(summand);
+//     numStart += summand.num.slice.len;
+//     denStart += summand.den.slice.len;
+// }
 
 fn parseNumber(string: []const u8, runIndex: *u64) i64 {
     var num: i64 = 0;
