@@ -54,30 +54,38 @@ pub const Expression = union(enum) {
     }
 };
 
-pub const FracOfProducts= struct {
-    num: []i64,
-    den: []i64,
+pub const FracOfProducts = struct {
+    const This = @This();
+
+    num: Factors,
+    den: Factors,
+    pub fn init(numBuff: []i64, denBuff: []i64) This {
+        return This{
+            .num = Factors.init(numBuff),
+            .den = Factors.init(denBuff)
+        };
+    }
     pub fn printTop(this: FracOfProducts) void {
-        const numWidth = calcSliceWidth(this.num);
+        const numWidth = calcSliceWidth(this.num.slice);
         if (isOnlyProduct(this)) { printRepeat(numWidth, " "); } else { printFracNum(this); }
     }
     pub fn printMid(this: FracOfProducts) void {
         const fracWidth = calcFracWidth(this);
-        if (isOnlyProduct(this)) { printSeparatedSlice(this.num, "·"); } else { printRepeat(fracWidth, "—"); }
+        if (isOnlyProduct(this)) { printSeparatedSlice(this.num.slice, "·"); } else { printRepeat(fracWidth, "—"); }
     }
     pub fn printBot(this: FracOfProducts) void {
-        const numWidth = calcSliceWidth(this.num);
+        const numWidth = calcSliceWidth(this.num.slice);
         if (isOnlyProduct(this)) { printRepeat(numWidth, " "); } else { printFracDen(this); }
     }
     pub fn toFrac(this: FracOfProducts) Frac {
         const frac = Frac{
-            .num = multiplyFactors(this.num),
-            .den = if (isOnlyProduct(this)) 1 else multiplyFactors(this.den)
+            .num = multiplyFactors(this.num.slice),
+            .den = if (isOnlyProduct(this)) 1 else multiplyFactors(this.den.slice)
         };
         return fractions.reduce(frac);
     }
     fn isOnlyProduct(this: FracOfProducts) bool {
-        return this.den.len == 0;
+        return this.den.slice.len == 0;
     }
 };
 
@@ -90,11 +98,11 @@ pub fn printFrac(a: Frac) void {
 }
 
 fn printFracNum(frac: FracOfProducts) void {
-    printFracElement(frac, frac.num);
+    printFracElement(frac, frac.num.slice);
 }
 
 fn printFracDen(frac: FracOfProducts) void {
-    printFracElement(frac, frac.den);
+    printFracElement(frac, frac.den.slice);
 }
 
 fn printFracElement(frac: FracOfProducts, element: []i64) void {
@@ -112,8 +120,8 @@ fn printFracElement(frac: FracOfProducts, element: []i64) void {
 }
 
 fn calcFracWidth(x: FracOfProducts) u64 {
-    const numWidth = calcSliceWidth(x.num);
-    const denWidth = calcSliceWidth(x.den);
+    const numWidth = calcSliceWidth(x.num.slice);
+    const denWidth = calcSliceWidth(x.den.slice);
     return max(numWidth, denWidth);
 }
 

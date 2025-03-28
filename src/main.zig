@@ -12,20 +12,18 @@ comptime {
 
 var inputBuffer: [128]u8 = undefined;
 
-
 pub fn main() !void {
-    var timer: std.time.Timer = try std.time.Timer.start();
-    time(&timer);
-    primes.generate();
+    //var timer: std.time.Timer = try std.time.Timer.start();
+    //time(&timer);
+    //primes.generate();
+    //time(&timer);
 
-    time(&timer);
+    // parser.showcases();
 
-    parser.showcases();
-    
     //const inputResult = stdin.readUntilDelimiterOrEof(inputBuffer[0..], '\n') catch null;
     //if (inputResult) |input| {
 
-    const inputs: [3][]const u8 = .{
+    const inputs = [_][]const u8{
         "3/4 + 3/-7",
         "-1/4 + 1/4 - 1/8 - 7/8",
         "-12 /-88/7 +5*3+1*8/4/5",
@@ -38,7 +36,7 @@ pub fn main() !void {
 
     for (inputs) |input| {
         parser.init();
-        
+
         try parser.parse(input);
         parser.parseSummands();
         parser.printSymbols();
@@ -50,11 +48,11 @@ pub fn main() !void {
         print("\n", .{});
     }
 
-    print("   78   \n", .{});
-    print("——————     78       78  \n", .{});
-    print(" _____  ————————  —=====\n", .{});
-    print("√12*45  √(12*45)  √12*45\n", .{});
-    print("\n", .{});
+    // print("   78   \n", .{});
+    // print("——————     78       78  \n", .{});
+    // print(" _____  ————————  —=====\n", .{});
+    // print("√12*45  √(12*45)  √12*45\n", .{});
+    // print("\n", .{});
 
 }
 
