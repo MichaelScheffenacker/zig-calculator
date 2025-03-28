@@ -54,19 +54,33 @@ pub const Expression = union(enum) {
     }
 };
 
-//var summandsBuffer: [64]FracOfProducts = undefined;
-//AppendableSlice(FracOfProducts);
 pub const Summands = struct {
-    slice: []FracOfProducts,
-    pub fn append(this: Summands, summand: FracOfProducts) struct {Summands, FracOfProducts} {
+    var buffer: [64]FracOfProducts = undefined;
+    slice: []FracOfProducts = buffer[0..0],
+    pub fn init() Summands {
+        return Summands{ .slice = buffer[0..0] };
+    }
+    pub fn append(this: Summands, summand: FracOfProducts) struct { Summands, FracOfProducts } {
         var slice = this.slice;
         const pos = slice.len;
         slice.len += 1;
         slice[pos] = summand;
-        return .{
-            Summands{ .slice = slice },
-            summand.shiftFactors()
-        };
+        return .{ 
+            Summands{ .slice = slice }, 
+            FracOfProducts.new() 
+            };
+    }
+    pub fn calculateSum(this: Summands) FracOfProducts {
+        var sum = Frac{ .num = 0, .den = 1 };
+        for (this.slice) |summand| {
+            sum = fractions.add(sum, summand.toFrac());
+        }
+        var ssum = FracOfProducts.new();
+        ssum.num = ssum.num.append(sum.num);
+        if (sum.den != 1) {
+            ssum.den = ssum.den.append(sum.den);
+        }
+        return ssum;
     }
 };
 
@@ -78,14 +92,33 @@ pub const FracOfProducts = struct {
     num: Factors,
     den: Factors,
     pub fn init() FracOfProducts {
-        return FracOfProducts{ .num = Factors.init(&numBuff), .den = Factors.init(&denBuff) };
+        return FracOfProducts{ 
+            .num = Factors.init(&numBuff), 
+            .den = Factors.init(&denBuff) 
+            };
     }
-    pub fn shiftFactors(this: FracOfProducts) FracOfProducts {
-        numStart += this.num.slice.len;
-        denStart += this.den.slice.len;
+    pub fn appendNum(this: FracOfProducts, num: i64) FracOfProducts {
+        numStart += 1;
+        return FracOfProducts{
+            .num = this.num.append(num),
+            .den = this.den
+        };
+    }
+    pub fn appendDen(this: FracOfProducts, den: i64) FracOfProducts {
+        denStart += 1;
+        return FracOfProducts{
+            .num = this.num,
+            .den = this.den.append(den)
+        };
+    }
+    pub fn new() FracOfProducts {
+        // new() provides a new FracOfProducts with a fresh section of the num/denBuffers
+        // old instances of FracOfProducts can still be used, but appeding num/den will
+        // overwrite the values of newer instances.
         return FracOfProducts{ 
             .num = Factors{ .slice = numBuff[numStart..numStart] },
-            .den = Factors{ .slice = denBuff[denStart..denStart] }};
+            .den = Factors{ .slice = denBuff[denStart..denStart] } 
+            };
     }
     pub fn printTop(this: FracOfProducts) void {
         const numWidth = calcSliceWidth(this.num.slice);
@@ -111,8 +144,11 @@ pub const FracOfProducts = struct {
             printFracDen(this);
         }
     }
-    pub fn toFrac(this: FracOfProducts) Frac {
-        const frac = Frac{ .num = multiplyFactors(this.num.slice), .den = if (isOnlyProduct(this)) 1 else multiplyFactors(this.den.slice) };
+    fn toFrac(this: FracOfProducts) Frac {
+        const frac = Frac{ 
+            .num = multiplyFactors(this.num.slice), 
+            .den = if (isOnlyProduct(this)) 1 else multiplyFactors(this.den.slice) 
+            };
         return fractions.reduce(frac);
     }
     fn isOnlyProduct(this: FracOfProducts) bool {

@@ -14,12 +14,12 @@ var symbols: Symbols = undefined;
 
 const ParseError = error{ missingOperand, redundantOperator };
 
-var summandsBuffer: [64]FracOfProducts = undefined;
+
 var summands: types.Summands = undefined;
 
 pub fn init() void {
     symbols = Symbols.init(&symbolsBuffer);
-    summands = types.Summands{ .slice = summandsBuffer[0..0] };
+    summands = types.Summands.init();
 }
 
 pub fn printSymbols() void {
@@ -70,7 +70,7 @@ pub fn parseSummands() void {
     var factor = symbols.slice[0].int;
     var i: u64 = 1;
     var summand = FracOfProducts.init();
-    summand.num = summand.num.append(factor);
+    summand = summand.appendNum(factor);
 
     while (i < symbols.slice.len) {
         operator = symbols.slice[i].op;
@@ -78,27 +78,19 @@ pub fn parseSummands() void {
 
         if (operator == '+' or operator == '-') {
             summands, summand = summands.append(summand);
-            if (operator == '-') {
-                factor *= -1;
-            }
-            summand.num = summand.num.append(factor);
+            factor *= if (operator == '-') -1 else 1;
+            summand = summand.appendNum(factor);
         } else {
             if (operator == '*') {
-                summand.num = summand.num.append(factor);
+                summand = summand.appendNum(factor);
             } else if (operator == '/') {
-                summand.den = summand.den.append(factor);
+                summand = summand.appendDen(factor);
             }
         }
         i += 2;
     }
     summands, summand = summands.append(summand);
 }
-
-// pub fn appendSummand(summand: FracOfProducts) void {
-//     summands = summands.append(summand);
-//     numStart += summand.num.slice.len;
-//     denStart += summand.den.slice.len;
-// }
 
 fn parseNumber(string: []const u8, runIndex: *u64) i64 {
     var num: i64 = 0;
@@ -126,28 +118,18 @@ fn isSignSymbol(symbol: u8) bool {
     return (symbol == '+' or symbol == '-');
 }
 
-pub fn calculateResult() Frac {
-    var sum = Frac{ .num = 0, .den = 1 };
-    for (summands.slice) |summand| {
-        sum = fractions.add(sum, summand.toFrac());
-    }
-    //var num = numBuff[numStart .. numStart + 1];
-    //var den = denBuff[denStart .. denStart + 1];
-    //num[0] = sum.num;
-    //den[0] = sum.den;
-    //numStart += 1;
-    //denStart += 1;
-    return sum;
+pub fn calculateResult() FracOfProducts {
+    return summands.calculateSum();
 }
 
-pub fn printCalculation(sum: Frac) void {
+pub fn printCalculation(sum: FracOfProducts) void {
     print("\n", .{});
     for (summands.slice, 0..) |summand, i| {
         summand.printTop();
         if (i < summands.slice.len - 1) print("   ", .{});
     }
     print("   ", .{});
-    //sum.printTop();
+    sum.printTop();
 
     print("\n", .{});
     for (summands.slice, 0..) |summand, i| {
@@ -155,7 +137,7 @@ pub fn printCalculation(sum: Frac) void {
         if (i < summands.slice.len - 1) print(" + ", .{});
     }
     print(" = ", .{});
-    //sum.printMid();
+    sum.printMid();
 
     print("\n", .{});
     for (summands.slice, 0..) |summand, i| {
@@ -163,9 +145,9 @@ pub fn printCalculation(sum: Frac) void {
         if (i < summands.slice.len - 1) print("   ", .{});
     }
     print("   ", .{});
-    //sum.printBot();
+    sum.printBot();
 
-    types.printFrac(sum);
+    // types.printFrac(sum);
 
     print("\n", .{});
 }
