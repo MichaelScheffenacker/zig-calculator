@@ -6,13 +6,11 @@ const fractions = @import("fractions.zig");
 
 pub const Frac = struct { num: i64, den: i64 };
 
-const Factors = AppendableSlice(i64);
-
-pub fn AppendableSlice(comptime T: type) type { // to create a generic (struct) a function returning generic Type is required ...
+pub fn AppendableSlice(comptime T: type, buffer: []T) type { // to create a generic (struct) a function returning generic Type is required ...
     return struct { // ... this leads to utilization of an anonymous struct ...
         const This = @This(); // ... therefore instead of referencing the scruct by name the builtin function @This() is used.
         slice: []T,
-        pub fn init(buffer: []T) This { // Since Zig requires arrays sizes to be known at compile time, passing it by reference is required ...
+        pub fn new() This { // Since Zig requires arrays sizes to be known at compile time, passing it by reference is required ...
             return This{ .slice = buffer[0..0] }; // ... here; for some reason a slice and can be used as such reference.
         }
         pub fn append(this: This, value: T) This {
@@ -30,6 +28,9 @@ pub fn AppendableSlice(comptime T: type) type { // to create a generic (struct) 
         }
     };
 }
+
+var symbolsBuffer: [1024]Expression = undefined;
+pub const Symbols = AppendableSlice(Expression, &symbolsBuffer);
 
 pub const Expression = union(enum) {
     int: i64,
@@ -57,7 +58,7 @@ pub const Expression = union(enum) {
 pub const Summands = struct {
     var buffer: [64]FracOfProducts = undefined;
     slice: []FracOfProducts = buffer[0..0],
-    pub fn init() Summands {
+    pub fn new() Summands {
         return Summands{ .slice = buffer[0..0] };
     }
     pub fn append(this: Summands, summand: FracOfProducts) struct { Summands, FracOfProducts } {
@@ -87,14 +88,16 @@ pub const Summands = struct {
 pub const FracOfProducts = struct {
     var numBuff: [64]i64 = undefined;
     var denBuff: [64]i64 = undefined;
+    const NumFactors = AppendableSlice(i64, &numBuff);
+    const DenFactors = AppendableSlice(i64, &denBuff);
     var numStart: u64 = 0;
     var denStart: u64 = 0;
-    num: Factors,
-    den: Factors,
+    num: NumFactors,
+    den: DenFactors,
     pub fn init() FracOfProducts {
         return FracOfProducts{ 
-            .num = Factors.init(&numBuff), 
-            .den = Factors.init(&denBuff) 
+            .num = NumFactors.new(), 
+            .den = DenFactors.new() 
             };
     }
     pub fn appendNum(this: FracOfProducts, num: i64) FracOfProducts {
@@ -116,8 +119,8 @@ pub const FracOfProducts = struct {
         // old instances of FracOfProducts can still be used, but appeding num/den will
         // overwrite the values of newer instances.
         return FracOfProducts{ 
-            .num = Factors{ .slice = numBuff[numStart..numStart] },
-            .den = Factors{ .slice = denBuff[denStart..denStart] } 
+            .num = NumFactors{ .slice = numBuff[numStart..numStart] },
+            .den = DenFactors{ .slice = denBuff[denStart..denStart] } 
             };
     }
     pub fn printTop(this: FracOfProducts) void {
@@ -230,7 +233,7 @@ fn max(a: u64, b: u64) u64 {
 
 test "AppendableSlice test" {
     var buff: [8]i8 = undefined;
-    var slice = AppendableSlice(i8).init(&buff);
+    var slice = AppendableSlice(i8, &buff).new();
     slice = slice.append(2);
     slice = slice.append(3);
     try expect(slice.slice[0] == 2);

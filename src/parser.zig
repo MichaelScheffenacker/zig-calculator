@@ -6,20 +6,16 @@ const Frac = types.Frac;
 const FracOfProducts = types.FracOfProducts;
 const Expression = types.Expression;
 
-const fractions = @import("fractions.zig");
+var symbols: types.Symbols = undefined;
+var summands: types.Summands = undefined;
 
-const Symbols = types.AppendableSlice(Expression);
-var symbolsBuffer: [1024]Expression = undefined;
-var symbols: Symbols = undefined;
+const fractions = @import("fractions.zig");
 
 const ParseError = error{ missingOperand, redundantOperator };
 
-
-var summands: types.Summands = undefined;
-
 pub fn init() void {
-    symbols = Symbols.init(&symbolsBuffer);
-    summands = types.Summands.init();
+    symbols = types.Symbols.new();
+    summands = types.Summands.new();
 }
 
 pub fn printSymbols() void {
