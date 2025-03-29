@@ -10,8 +10,10 @@ pub fn AppendableSlice(comptime T: type, buffer: []T) type { // to create a gene
     return struct { // ... this leads to utilization of an anonymous struct ...
         const This = @This(); // ... therefore instead of referencing the scruct by name the builtin function @This() is used.
         slice: []T,
-        pub fn new() This { // Since Zig requires arrays sizes to be known at compile time, passing it by reference is required ...
-            return This{ .slice = buffer[0..0] }; // ... here; for some reason a slice and can be used as such reference.
+        // new() resets the given buffer; new values overwrite the values of former instances
+        // former instances are supposed to be obsolete after calling new()
+        pub fn new() This {
+            return This{ .slice = buffer[0..0] };
         }
         pub fn append(this: This, value: T) This {
             var slice = this.slice;

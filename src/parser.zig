@@ -143,8 +143,6 @@ pub fn printCalculation(sum: FracOfProducts) void {
     print("   ", .{});
     sum.printBot();
 
-    // types.printFrac(sum);
-
     print("\n", .{});
 }
 
